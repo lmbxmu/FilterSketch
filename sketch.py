@@ -14,6 +14,13 @@ checkpoint = utils.checkpoint(args)
 logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
 loss_func = nn.CrossEntropyLoss()
 
+# Data
+print('==> Preparing data..')
+if args.data_set == 'cifar10':
+    loader = cifar10.Data(args)
+else:
+    loader = cifar10.Data(args)
+
 def weight_norm(weight, weight_norm_method=None, filter_norm=False):
 
     if weight_norm_method == 'max':
@@ -108,8 +115,10 @@ def load_vgg_sketch_model(model):
     # with open(args.sketch_model, 'rb') as f:
         # origin_model = torch.load(f, map_location='cpu').to(device)
     ckpt = torch.load(args.sketch_model, map_location=device)
-    origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
+    origin_model = import_module(f'model.{args.arch}').VGG().to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
+    logger.info('==>Before Sketch')
+    test(origin_model, loader.testLoader)
     oristate_dict = origin_model.state_dict()
 
     state_dict = model.state_dict()
@@ -157,6 +166,8 @@ def load_vgg_sketch_model(model):
             state_dict[name + '.bias'] = module.bias.data
 
     model.load_state_dict(state_dict)
+    logger.info('==>After Sketch')
+    test(model, loader.testLoader)
 
 def load_resnet_sketch_model(model):
     cfg = {'resnet56': [9, 9, 9],
@@ -168,6 +179,9 @@ def load_resnet_sketch_model(model):
     ckpt = torch.load(args.sketch_model, map_location=device)
     origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
+    logger.info('==>Before Sketch')
+    test(origin_model, loader.testLoader)
+
     oristate_dict = origin_model.state_dict()
 
     state_dict = model.state_dict()
@@ -259,6 +273,8 @@ def load_resnet_sketch_model(model):
             state_dict[name + '.bias'] = oristate_dict[name + '.bias']
 
     model.load_state_dict(state_dict)
+    logger.info('==>After Sketch')
+    test(model, loader.testLoader)
 
 def load_googlenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
@@ -541,12 +557,6 @@ def test(model, testLoader):
 def main():
     start_epoch = 0
     best_acc = 0.0
-    # Data
-    print('==> Preparing data..')
-    if args.data_set == 'cifar10':
-        loader = cifar10.Data(args)
-    else:
-        loader = cifar10.Data(args)
 
     # Model
     print('==> Building model..')
