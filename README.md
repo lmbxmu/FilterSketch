@@ -8,7 +8,7 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 ## CIFAR-10
 
-| [VGG16](https://drive.google.com/open?id=1iqcLZyMTnciVLiKOHNaKbeXixK0KOzuX) | [ResNet56]() | [ResNet110]() | [DenseNet40]() | [GoogLeNet]() |
+| [VGG16](https://drive.google.com/open?id=1iqcLZyMTnciVLiKOHNaKbeXixK0KOzuX) | [ResNet56](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) | [ResNet110]() | [DenseNet40]() | [GoogLeNet]() |
 
 ## ImageNet
 
