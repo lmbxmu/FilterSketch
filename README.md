@@ -40,24 +40,6 @@ python sketch.py
 --filter_norm True
 ```
 
-## Random Baseline
-
-```shell
-python random_init.py 
---data_set cifar10 
---data_path ../../data/cifar10 
---sketch_model ./experience/vgg16/baseline/checkpoint/model_best.pt 
---job_dir ./experience/vgg16/random_pretrain 
---arch vgg 
---cfg vgg16 
---lr 0.01 
---lr_decay_step 75 112 
---num_epochs 150 
---gpus 0 
---sketch_rate 0.5 
---random_rule random_pretrain
-```
-
 ## Other optional arguments
 
 ```shell
