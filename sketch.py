@@ -263,6 +263,127 @@ def load_resnet_sketch_model(model):
     logger.info('==>After Sketch')
     test(model, loader.testLoader)
 
+def load_resnet_imagenet_sketch_model(model):
+    cfg = {'resnet18': [2, 2, 2, 2],
+           'resnet34': [3, 4, 6, 3],
+           'resnet50': [3, 4, 6, 3],
+           'resnet101': [3, 4, 23, 3],
+           'resnet152': [3, 8, 36, 3]}
+
+    if args.sketch_model is None or not os.path.exists(args.sketch_model):
+        raise ('Sketch model path should be exist!')
+    ckpt = torch.load(args.sketch_model, map_location=device)
+    origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
+    origin_model.load_state_dict(ckpt['state_dict'])
+    logger.info('==>Before Sketch')
+    test(origin_model, loader.testLoader)
+
+    oristate_dict = origin_model.state_dict()
+
+    state_dict = model.state_dict()
+    is_preserve = False  # Whether the previous layer retains the original weight dimension, no sketch
+
+    current_cfg = cfg[args.cfg]
+
+    all_sketch_conv_weight = []
+    all_sketch_bn_weight = []
+
+    for layer, num in enumerate(current_cfg):
+        layer_name = 'layer' + str(layer + 1) + '.'
+        for i in range(num):
+            if args.cfg == 'resnet18' or args.cfg == 'resnet34':
+                iter = 2  # the number of convolution layers in a block, except for shortcut
+            else:
+                iter = 3
+            for j in range(iter):
+                # Block the first convolution layer, only sketching the first dimension
+                # Block the last convolution layer, only Skitch on the channel dimension
+                conv_name = layer_name + str(i) + '.conv' + str(j + 1)
+                conv_weight_name = conv_name + '.weight'
+                all_sketch_conv_weight.append(conv_weight_name)  # Record the weight of the sketch
+                oriweight = oristate_dict[conv_weight_name]
+                l = int(oriweight.size(0) * args.sketch_rate)
+
+                if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and j != iter - 1:
+                    bn_weight_name = layer_name + str(i) + '.bn' + str(j + 1) + '.weight'
+                    bn_bias_name = layer_name + str(i) + '.bn' + str(j + 1) + '.bias'
+                    all_sketch_bn_weight.append(bn_weight_name)
+                    if args.sketch_bn:
+                        bn_weight = oristate_dict[bn_weight_name]
+                        bn_bias = oristate_dict[bn_bias_name]
+                        sketch_filter, state_dict[bn_weight_name], \
+                        state_dict[bn_bias_name] = sketch_matrix(oriweight, l, dim=0,
+                                                                 bn_weight=bn_weight,
+                                                                 bn_bias=bn_bias, sketch_bn=True,
+                                                                 weight_norm_method = args.weight_norm_method,
+                                                                 filter_norm = args.filter_norm
+                        )
+                        if args.weight_norm:
+                            sketch_filter /= torch.sum(sketch_filter)
+                            state_dict[bn_weight_name] /= \
+                                torch.sum(state_dict[bn_weight_name])
+                            state_dict[bn_bias_name] /= \
+                                torch.sum(state_dict[bn_bias_name])
+                    else:
+                        sketch_filter = sketch_matrix(oriweight, l, dim=0,
+                                                      bn_weight=None,
+                                                      bn_bias=None, sketch_bn=False,
+                                                      weight_norm_method=args.weight_norm_method,
+                                                      filter_norm=args.filter_norm
+                                                      )
+                        if args.weight_norm:
+                            sketch_filter /= torch.sum(sketch_filter)
+                    if is_preserve or j == 0:
+                        state_dict[conv_weight_name] = sketch_filter
+                    else:
+                        l = int(oriweight.size(1) * args.sketch_rate)
+                        sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
+                                                       weight_norm_method=args.weight_norm_method,
+                                                       filter_norm=args.filter_norm
+                                                       )
+                        if args.weight_norm:
+                            sketch_channel /= torch.sum(sketch_channel)
+                        state_dict[conv_weight_name] = sketch_channel
+                    is_preserve = False
+                else:
+                    if j == iter - 1:  # Block the last volume layer only sketch the channel dimension
+                        l = int(oriweight.size(1) * args.sketch_rate)
+                        sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
+                                                       weight_norm_method=args.weight_norm_method,
+                                                       filter_norm=args.filter_norm
+                                                       )
+                        if args.weight_norm:
+                            sketch_channel /= torch.sum(sketch_channel)
+                        state_dict[conv_weight_name] = sketch_channel
+                    else:
+                        state_dict[conv_weight_name] = oriweight
+                        is_preserve = True
+
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Conv2d):
+            conv_name = name + '.weight'
+            if conv_name not in all_sketch_conv_weight:
+                state_dict[conv_name] = oristate_dict[conv_name]
+
+        elif isinstance(module, nn.BatchNorm2d):
+            bn_weight_name = name + '.weight'
+            bn_bias_name = name + '.bias'
+            bn_mean_name = name + '.running_mean'
+            bn_var_name = name + '.running_var'
+            if bn_weight_name not in all_sketch_bn_weight:
+                state_dict[bn_weight_name] = oristate_dict[bn_weight_name]
+                state_dict[bn_bias_name] = oristate_dict[bn_bias_name]
+                state_dict[bn_mean_name] = oristate_dict[bn_mean_name]
+                state_dict[bn_var_name] = oristate_dict[bn_var_name]
+
+        elif isinstance(module, nn.Linear):
+            state_dict[name + '.weight'] = oristate_dict[name + '.weight']
+            state_dict[name + '.bias'] = oristate_dict[name + '.bias']
+
+    model.load_state_dict(state_dict)
+    logger.info('==>After Sketch')
+    test(model, loader.testLoader)
+
 def load_googlenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
         raise ('Sketch model path should be exist!')
@@ -551,8 +672,12 @@ def main():
         model = import_module(f'model.{args.arch}').SketchVGG(args.sketch_rate).to(device)
         load_vgg_sketch_model(model)
     elif args.arch == 'resnet':
-        model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
-        load_resnet_sketch_model(model)
+        if args.data_set == 'imagenet':
+            model = import_module(f'model.{args.arch}_imagenet').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
+
+        else:
+            model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
+            load_resnet_sketch_model(model)
     elif args.arch == 'googlenet':
         model = import_module(f'model.{args.arch}').GoogLeNet(args.sketch_rate).to(device)
         load_googlenet_sketch_model(model)
