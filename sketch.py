@@ -6,7 +6,7 @@ import utils.common as utils
 
 import os
 import time
-from data import cifar10
+from data import cifar10, imagenet
 from importlib import import_module
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
@@ -18,8 +18,8 @@ loss_func = nn.CrossEntropyLoss()
 print('==> Preparing data..')
 if args.data_set == 'cifar10':
     loader = cifar10.Data(args)
-else:
-    loader = cifar10.Data(args)
+elif args.data_set == 'imagenet':
+    loader = imagenet.Data(args)
 
 def weight_norm(weight, weight_norm_method=None, filter_norm=False):
 
@@ -59,17 +59,6 @@ def sketch_matrix(weight, l, dim,
             A = torch.cat((A, bn_weight), 1)
             bn_bias = bn_bias.view(bn_bias.size(0), -1)
             A = torch.cat((A, bn_bias), 1)
-
-        # A = A.cpu().numpy()
-        # if dim == 0:
-        #     for i in range(bn_weight.size(0) - 1, -1, -1):
-        #         if bn_weight[i] < threshold:
-        #             A = np.delete(A, i, axis=0)
-        # elif dim == 1:
-        #     for i in range(A.shape[0]-1, -1, -1):
-        #         if np.sum(A[i]) < threshold:
-        #             A = np.delete(A, i, axis=0)
-        # A = torch.FloatTensor(A).cuda()
 
     B = torch.zeros(l, A.size(1))
     ind = int(l / 2)
@@ -112,8 +101,6 @@ def load_vgg_sketch_model(model):
 
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
         raise ('Sketch model path should be exist!')
-    # with open(args.sketch_model, 'rb') as f:
-        # origin_model = torch.load(f, map_location='cpu').to(device)
     ckpt = torch.load(args.sketch_model, map_location=device)
     origin_model = import_module(f'model.{args.arch}').VGG().to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
