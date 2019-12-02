@@ -548,10 +548,7 @@ def main():
     # Model
     print('==> Building model..')
     if args.arch == 'vgg':
-        if args.sketch_lastconv:
-            model = import_module(f'model.{args.arch}').SketchVGG(args.cfg, args.sketch_rate).to(device)
-        else:
-            model = import_module(f'model.{args.arch}').NoSketchLastConvVGG(args.sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').SketchVGG(args.sketch_rate).to(device)
         load_vgg_sketch_model(model)
     elif args.arch == 'resnet':
         model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
