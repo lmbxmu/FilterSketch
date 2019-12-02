@@ -9,11 +9,11 @@ import os
 import time
 import random
 import heapq
-from data import cifar10, cifar100
+from data import cifar10
 from importlib import import_module
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
-logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
+logger = utils.get_logger(args.job_dir + '/logger.log')
 checkpoint = utils.checkpoint(args)
 loss_func = nn.CrossEntropyLoss()
 
@@ -133,8 +133,6 @@ def main():
     print('==> Preparing data..')
     if args.data_set == 'cifar10':
         loader = cifar10.Data(args)
-    elif args.data_set == 'cifar100':
-        loader = cifar100.Data(args)
     else:
         loader = cifar10.Data(args)
 

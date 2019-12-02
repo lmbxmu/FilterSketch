@@ -10,13 +10,12 @@ import time
 import utils.common as utils
 
 from utils.options import args
-from data import cifar100, cifar10
+from data import cifar10
 from importlib import import_module
-from torch.optim.lr_scheduler import StepLR
 
 device = torch.device(f"cuda:{args.gpus[0]}")
 checkpoint = utils.checkpoint(args)
-logger = utils.get_logger(os.path.join(args.job_dir + 'baselinelogger.log'))
+logger = utils.get_logger(args.job_dir + '/logger.log')
 loss_func = nn.CrossEntropyLoss()
 
 # Training
@@ -88,9 +87,6 @@ def main():
     if args.data_set == 'cifar10':
         loader = cifar10.Data(args)
         class_num = 10
-    elif args.data_set == 'cifar100':
-        loader = cifar100.Data(args)
-        class_num = 100
     else:
         loader = cifar10.Data(args)
         class_num = 10

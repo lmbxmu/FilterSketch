@@ -106,6 +106,12 @@ def resnet56(**kwargs):
 def resnet110(**kwargs):
     return ResNet(ResBasicBlock, 110, **kwargs)
 
+def resnet(cfg, **kwargs):
+    if cfg == 'resnet56':
+        return resnet56(**kwargs)
+    elif cfg == 'resnet110':
+        return resnet110(**kwargs)
+
 def test():
     model = resnet56(sketch_rate=0.5)
     y = model(torch.randn(1, 3, 32, 32))

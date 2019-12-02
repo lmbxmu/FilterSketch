@@ -1,18 +1,17 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from model.googlenet import Inception
 from utils.options import args
 import utils.common as utils
 
 import os
 import time
-from data import cifar10, cifar100
+from data import cifar10
 from importlib import import_module
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
-logger = utils.get_logger(args.job_dir + '/logger.log')
 checkpoint = utils.checkpoint(args)
+logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
 loss_func = nn.CrossEntropyLoss()
 
 def weight_norm(weight, weight_norm_method=None, filter_norm=False):
@@ -192,8 +191,8 @@ def load_resnet_sketch_model(model):
                 l = int(oriweight.size(0) * args.sketch_rate)
 
                 if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and j == 0:
-                    bn_weight_name = layer_name + str(i) + 'bn' + str(j + 1) + '.weight'
-                    bn_bias_name = layer_name + str(i) + 'bn' + str(j + 1) + '.bias'
+                    bn_weight_name = layer_name + str(i) + '.bn' + str(j + 1) + '.weight'
+                    bn_bias_name = layer_name + str(i) + '.bn' + str(j + 1) + '.bias'
                     all_sketch_bn_weight.append(bn_weight_name)
                     if args.sketch_bn:
                         bn_weight = oristate_dict[bn_weight_name]
@@ -237,6 +236,7 @@ def load_resnet_sketch_model(model):
                         state_dict[conv_weight_name] = oriweight
                         is_preserve = True
 
+    # print(all_sketch_bn_weight)
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
             conv_name = name + '.weight'
@@ -557,7 +557,7 @@ def main():
             model = import_module(f'model.{args.arch}').NoSketchLastConvVGG(args.sketch_rate).to(device)
         load_vgg_sketch_model(model)
     elif args.arch == 'resnet':
-        model = import_module(f'model.{args.arch}').resnet(args.cfg, args.sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
         load_resnet_sketch_model(model)
     elif args.arch == 'googlenet':
         model = import_module(f'model.{args.arch}').GoogLeNet(args.sketch_rate).to(device)
