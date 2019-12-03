@@ -115,6 +115,9 @@ def load_vgg_sketch_model(model):
     is_preserve = False
     for name, module in origin_model.named_modules():
         if isinstance(module, nn.Conv2d):
+            if name == 'features.0': #first conv needn't sketch
+                continue
+
             oriweight = module.weight.data
             layer = int(name.split('.')[1]) + 1  # the index of BN in state_dict
             l = int(oriweight.size(0) * args.sketch_rate)
