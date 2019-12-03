@@ -40,6 +40,25 @@ python sketch.py
 --filter_norm True
 ```
 
+## Layer-wise Sketch
+
+```shell
+python layerwise_sketch.py 
+--data_set cifar10 
+--data_path ../../data/cifar10 
+--sketch_model ./experiment/vgg16/baseline/checkpoint/model_best.pt
+--job_dir ./experiment/vgg16/finetune25  
+--layerwise_type Sketch
+--weight_norm_method l2
+--filter_norm True
+--gpus 1 
+--sketch_rate 0.5 
+--lr 0.01
+--num_epochs 15 
+--lr_decay_step 5 
+--train_batch_size 256
+```
+
 ## Other optional arguments
 
 ```shell
