@@ -70,6 +70,9 @@ def sketch_matrix(weight, l, dim,
             B[numNonzeroRows, :] = A[i, :]
         else:
 
+            if n - i < l // 2:
+                break
+
             u, sigma, _ = torch.svd(B.t())
 
             sigmaSquare = sigma.mul(sigma)
@@ -273,10 +276,10 @@ def load_resnet_imagenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
         raise ('Sketch model path should be exist!')
     ckpt = torch.load(args.sketch_model, map_location=device)
-    origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
-    origin_model.load_state_dict(ckpt['state_dict'])
+    origin_model = import_module(f'model.{args.arch}_imagenet').resnet(args.cfg).to(device)
+    origin_model.load_state_dict(ckpt)
     logger.info('==>Before Sketch')
-    test(origin_model, loader.testLoader)
+    test(origin_model, loader.testLoader, topk=(1, 5))
 
     oristate_dict = origin_model.state_dict()
 
@@ -318,12 +321,6 @@ def load_resnet_imagenet_sketch_model(model):
                                                                  weight_norm_method = args.weight_norm_method,
                                                                  filter_norm = args.filter_norm
                         )
-                        if args.weight_norm:
-                            sketch_filter /= torch.sum(sketch_filter)
-                            state_dict[bn_weight_name] /= \
-                                torch.sum(state_dict[bn_weight_name])
-                            state_dict[bn_bias_name] /= \
-                                torch.sum(state_dict[bn_bias_name])
                     else:
                         sketch_filter = sketch_matrix(oriweight, l, dim=0,
                                                       bn_weight=None,
@@ -331,8 +328,6 @@ def load_resnet_imagenet_sketch_model(model):
                                                       weight_norm_method=args.weight_norm_method,
                                                       filter_norm=args.filter_norm
                                                       )
-                        if args.weight_norm:
-                            sketch_filter /= torch.sum(sketch_filter)
                     if is_preserve or j == 0:
                         state_dict[conv_weight_name] = sketch_filter
                     else:
@@ -341,8 +336,6 @@ def load_resnet_imagenet_sketch_model(model):
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
                                                        )
-                        if args.weight_norm:
-                            sketch_channel /= torch.sum(sketch_channel)
                         state_dict[conv_weight_name] = sketch_channel
                     is_preserve = False
                 else:
@@ -352,8 +345,6 @@ def load_resnet_imagenet_sketch_model(model):
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
                                                        )
-                        if args.weight_norm:
-                            sketch_channel /= torch.sum(sketch_channel)
                         state_dict[conv_weight_name] = sketch_channel
                     else:
                         state_dict[conv_weight_name] = oriweight
@@ -373,8 +364,8 @@ def load_resnet_imagenet_sketch_model(model):
             if bn_weight_name not in all_sketch_bn_weight:
                 state_dict[bn_weight_name] = oristate_dict[bn_weight_name]
                 state_dict[bn_bias_name] = oristate_dict[bn_bias_name]
-                state_dict[bn_mean_name] = oristate_dict[bn_mean_name]
-                state_dict[bn_var_name] = oristate_dict[bn_var_name]
+                # state_dict[bn_mean_name] = oristate_dict[bn_mean_name]
+                # state_dict[bn_var_name] = oristate_dict[bn_var_name]
 
         elif isinstance(module, nn.Linear):
             state_dict[name + '.weight'] = oristate_dict[name + '.weight']
@@ -382,7 +373,7 @@ def load_resnet_imagenet_sketch_model(model):
 
     model.load_state_dict(state_dict)
     logger.info('==>After Sketch')
-    test(model, loader.testLoader)
+    test(model, loader.testLoader, topk=(1, 5))
 
 def load_googlenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
@@ -629,7 +620,7 @@ def train(model, optimizer, trainLoader, args, epoch):
             logger.info(
                 'Epoch[{}] ({}/{}):\t'
                 'Loss {:.4f}\t'
-                'Accurary {:.2f}%\t\t'
+                'Accuracy {:.2f}%\t\t'
                 'Time {:.2f}s'.format(
                     epoch, batch * args.train_batch_size, len(trainLoader.dataset),
                     float(losses.avg), float(accurary.avg), cost_time
@@ -637,12 +628,12 @@ def train(model, optimizer, trainLoader, args, epoch):
             )
             start_time = current_time
 
-def test(model, testLoader):
-    global best_acc
+def test(model, testLoader, topk=(1,)):
     model.eval()
 
     losses = utils.AverageMeter()
-    accurary = utils.AverageMeter()
+    accuracy = utils.AverageMeter()
+    top5_accuracy = utils.AverageMeter()
 
     start_time = time.time()
     with torch.no_grad():
@@ -652,15 +643,23 @@ def test(model, testLoader):
             loss = loss_func(outputs, targets)
 
             losses.update(loss.item(), inputs.size(0))
-            predicted = utils.accuracy(outputs, targets)
-            accurary.update(predicted[0], inputs.size(0))
+            predicted = utils.accuracy(outputs, targets, topk=topk)
+            accuracy.update(predicted[0], inputs.size(0))
+            if len(topk) == 2:
+                top5_accuracy.update(predicted[1], inputs.size(0))
 
         current_time = time.time()
-        logger.info(
-            'Test Loss {:.4f}\tAccurary {:.2f}%\t\tTime {:.2f}s\n'
-            .format(float(losses.avg), float(accurary.avg), (current_time - start_time))
-        )
-    return accurary.avg
+        if len(topk) == 1:
+            logger.info(
+                'Test Loss {:.4f}\tAccuracy {:.2f}%\t\tTime {:.2f}s\n'
+                .format(float(losses.avg), float(accuracy.avg), (current_time - start_time))
+            )
+        else:
+            logger.info(
+                'Test Loss {:.4f}\tTop1 {:.2f}%\tTop5 {:.2f}%\tTime {:.2f}s\n'
+                    .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
+            )
+    return accuracy.avg
 
 def main():
     start_epoch = 0
@@ -674,7 +673,7 @@ def main():
     elif args.arch == 'resnet':
         if args.data_set == 'imagenet':
             model = import_module(f'model.{args.arch}_imagenet').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
-
+            load_resnet_imagenet_sketch_model(model)
         else:
             model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
             load_resnet_sketch_model(model)
@@ -696,7 +695,7 @@ def main():
     for epoch in range(start_epoch, args.num_epochs):
         train(model, optimizer, loader.trainLoader, args, epoch)
         scheduler.step()
-        test_acc = test(model, loader.testLoader)
+        test_acc = test(model, loader.testLoader, topk=(1, 5) if args.data_set == 'imagenet' else (1, ))
 
         is_best = best_acc < test_acc
         best_acc = max(best_acc, test_acc)
@@ -712,7 +711,7 @@ def main():
         }
         checkpoint.save_model(state, epoch + 1, is_best)
 
-    logger.info('Best accurary: {:.3f}'.format(float(best_acc)))
+    logger.info('Best accuracy: {:.3f}'.format(float(best_acc)))
 
 if __name__ == '__main__':
     main()
