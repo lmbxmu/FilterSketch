@@ -112,6 +112,79 @@ def resnet(cfg, **kwargs):
     elif cfg == 'resnet110':
         return resnet110(**kwargs)
 
+class Layerwise_SketchResNet(nn.Module):
+    def __init__(self, block, num_layers, sketch_rate=1.0, sketch_layer=1, num_classes=10):
+        super(Layerwise_SketchResNet, self).__init__()
+        assert (num_layers - 2) % 6 == 0, 'depth should be 6n+2'
+        n = (num_layers - 2) // 6
+
+        self.sketch_rate = sketch_rate
+        self.sketch_layer = sketch_layer
+        self.inplanes = 16
+        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.layer1 = self._make_layer(block, 16, blocks=n, stride=1)
+        self.layer2 = self._make_layer(block, 32, blocks=n, stride=2)
+        self.layer3 = self._make_layer(block, 64, blocks=n, stride=2)
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(64 * block.expansion, num_classes)
+
+        self.initialize()
+
+    def initialize(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def _make_layer(self, block, planes, blocks, stride):
+        layers = []
+
+        if self.sketch_layer != 0:
+            self.sketch_layer -= 1
+            layers.append(block(self.inplanes, planes, stride, sketch_rate=self.sketch_rate))
+        else:
+            layers.append(block(self.inplanes, planes, stride, sketch_rate=1.0))
+
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            if self.sketch_layer != 0:
+                self.sketch_layer -= 1
+                layers.append(block(self.inplanes, planes, sketch_rate=self.sketch_rate))
+            else:
+                layers.append(block(self.inplanes, planes, sketch_rate=1.0))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+
+        return x
+
+def layerwise_resnet56(**kwargs):
+    return Layerwise_SketchResNet(ResBasicBlock, 56, **kwargs)
+
+def layerwise_resnet110(**kwargs):
+    return Layerwise_SketchResNet(ResBasicBlock, 110, **kwargs)
+
+def layerwise_resnet(cfg, **kwargs):
+    if cfg == 'resnet56':
+        return layerwise_resnet56(**kwargs)
+    elif cfg == 'resnet110':
+        return layerwise_resnet110(**kwargs)
+
 def test():
     model = resnet56(sketch_rate=0.5)
     y = model(torch.randn(1, 3, 32, 32))

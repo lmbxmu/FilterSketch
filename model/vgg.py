@@ -65,3 +65,39 @@ class SketchVGG(nn.Module):
                            nn.ReLU(inplace=True)]
                 in_channels = x
         return nn.Sequential(*layers)
+
+class Layerwise_SketchVGG(nn.Module):
+    def __init__(self, sketch_rate, sketch_layer=1, num_classes=10):
+        super(Layerwise_SketchVGG, self).__init__()
+        self.sketch_rate = sketch_rate
+        self.sketch_layer = sketch_layer
+        self.features = self._make_layers(cfg)
+        self.classifier = nn.Sequential(OrderedDict([
+            ('linear1', nn.Linear(cfg[-2]
+                        if sketch_layer != 12 else int(512 * sketch_rate), cfg[-2])),
+            ('norm1', nn.BatchNorm1d(cfg[-2])),
+            ('relu1', nn.ReLU(inplace=True)),
+            ('linear2', nn.Linear(cfg[-2], num_classes)),
+        ]))
+
+    def forward(self, x):
+        out = self.features(x)
+        out = out.view(out.size(0), -1)
+        out = self.classifier(out)
+        return out
+
+    def _make_layers(self, cfg):
+        layers = []
+        in_channels = 3
+        for x in cfg:
+            if x == 'M':
+                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+            else:
+                if x * self.sketch_rate < in_channels * 3 * 3 and self.sketch_layer != 0:
+                    x = int(x * self.sketch_rate)
+                    self.sketch_layer -= 1
+                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+                           nn.BatchNorm2d(x),
+                           nn.ReLU(inplace=True)]
+                in_channels = x
+        return nn.Sequential(*layers)
