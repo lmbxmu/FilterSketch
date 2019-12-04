@@ -120,7 +120,7 @@ def load_vgg_sketch_model(model):
 
             oriweight = module.weight.data
             layer = int(name.split('.')[1]) + 1  # the index of BN in state_dict
-            l = int(oriweight.size(0) * args.sketch_rate)
+            l = state_dict[name + '.weight'].size(0)
 
             if not args.sketch_lastconv and name == 'features.40':
                 sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
@@ -144,7 +144,7 @@ def load_vgg_sketch_model(model):
                 if is_preserve: #If the previous layer is reserved, there is no need to sketch the channel
                     state_dict[name + '.weight'] = sketch_filter
                 else:
-                    l = int(oriweight.size(1) * args.sketch_rate)
+                    l = state_dict[name + '.weight'].size(1)
                     sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
                                                    weight_norm_method=args.weight_norm_method,
                                                    filter_norm=args.filter_norm)
@@ -195,7 +195,7 @@ def load_resnet_sketch_model(model):
                 conv_weight_name = conv_name + '.weight'
                 all_sketch_conv_weight.append(conv_weight_name) #Record the weight of the sketch
                 oriweight = oristate_dict[conv_weight_name]
-                l = int(oriweight.size(0) * args.sketch_rate)
+                l = state_dict[conv_weight_name].size(0)
 
                 if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and j == 0:
                     bn_weight_name = layer_name + str(i) + '.bn' + str(j + 1) + '.weight'
@@ -224,7 +224,7 @@ def load_resnet_sketch_model(model):
                     if is_preserve or j == 0:
                         state_dict[conv_weight_name] = sketch_filter
                     else:
-                        l = int(oriweight.size(1) * args.sketch_rate)
+                        l = state_dict[conv_weight_name].size(1)
                         sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
@@ -233,7 +233,7 @@ def load_resnet_sketch_model(model):
                     is_preserve = False
                 else:
                     if j == 1: #Block the last volume layer only sketch the channel dimension
-                        l = int(oriweight.size(1) * args.sketch_rate)
+                        l = state_dict[conv_weight_name].size(1)
                         sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
@@ -308,7 +308,7 @@ def load_resnet_imagenet_sketch_model(model):
                 conv_weight_name = conv_name + '.weight'
                 all_sketch_conv_weight.append(conv_weight_name)  # Record the weight of the sketch
                 oriweight = oristate_dict[conv_weight_name]
-                l = int(oriweight.size(0) * args.sketch_rate)
+                l = state_dict[conv_weight_name].size(0)
 
                 if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and j != iter - 1:
                     bn_weight_name = layer_name + str(i) + '.bn' + str(j + 1) + '.weight'
@@ -334,7 +334,7 @@ def load_resnet_imagenet_sketch_model(model):
                     if is_preserve or j == 0:
                         state_dict[conv_weight_name] = sketch_filter
                     else:
-                        l = int(oriweight.size(1) * args.sketch_rate)
+                        l = state_dict[conv_weight_name].size(1)
                         sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
@@ -343,7 +343,7 @@ def load_resnet_imagenet_sketch_model(model):
                     is_preserve = False
                 else:
                     if j == iter - 1:  # Block the last volume layer only sketch the channel dimension
-                        l = int(oriweight.size(1) * args.sketch_rate)
+                        l = state_dict[conv_weight_name].size(1)
                         sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
                                                        weight_norm_method=args.weight_norm_method,
                                                        filter_norm=args.filter_norm
@@ -367,8 +367,8 @@ def load_resnet_imagenet_sketch_model(model):
             if bn_weight_name not in all_sketch_bn_weight:
                 state_dict[bn_weight_name] = oristate_dict[bn_weight_name]
                 state_dict[bn_bias_name] = oristate_dict[bn_bias_name]
-                # state_dict[bn_mean_name] = oristate_dict[bn_mean_name]
-                # state_dict[bn_var_name] = oristate_dict[bn_var_name]
+                state_dict[bn_mean_name] = oristate_dict[bn_mean_name]
+                state_dict[bn_var_name] = oristate_dict[bn_var_name]
 
         elif isinstance(module, nn.Linear):
             state_dict[name + '.weight'] = oristate_dict[name + '.weight']
@@ -670,21 +670,24 @@ def main():
 
     # Model
     print('==> Building model..')
+    sketch_rate = utils.get_sketch_rate(args.sketch_rate)
     if args.arch == 'vgg':
-        model = import_module(f'model.{args.arch}').SketchVGG(args.sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').SketchVGG(sketch_rate, start_conv=args.start_conv).to(device)
         load_vgg_sketch_model(model)
     elif args.arch == 'resnet':
         if args.data_set == 'imagenet':
-            model = import_module(f'model.{args.arch}_imagenet').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
+            model = import_module(f'model.{args.arch}_imagenet')\
+                        .resnet(args.cfg, sketch_rate=sketch_rate, start_conv=args.start_conv).to(device)
             load_resnet_imagenet_sketch_model(model)
         else:
-            model = import_module(f'model.{args.arch}').resnet(args.cfg, sketch_rate=args.sketch_rate).to(device)
+            model = import_module(f'model.{args.arch}')\
+                        .resnet(args.cfg, sketch_rate=sketch_rate, start_conv=args.start_conv).to(device)
             load_resnet_sketch_model(model)
     elif args.arch == 'googlenet':
-        model = import_module(f'model.{args.arch}').GoogLeNet(args.sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').GoogLeNet(sketch_rate).to(device)
         load_googlenet_sketch_model(model)
     elif args.arch == 'densenet':
-        model = import_module(f'model.{args.arch}').densenet_cifar(args.sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').densenet_cifar(sketch_rate).to(device)
         load_densenet_sketch_model(model)
 
     print('Sketch Done!')

@@ -65,14 +65,22 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, sketch_rate=1.):
+    def __init__(self, block, num_blocks, num_classes=10, sketch_rate=None, start_conv=1):
         super(ResNet, self).__init__()
         self.in_planes = 64
-        self.sketch_rate = sketch_rate
+        if sketch_rate is None:
+            self.sketch_rate = [1] * sum(num_blocks)
+        else:
+            self.sketch_rate = sketch_rate
+        self.start_conv = start_conv
+        self.current_conv = 0
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.current_conv += 1
+
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
@@ -84,7 +92,10 @@ class ResNet(nn.Module):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride, sketch_rate=self.sketch_rate))
+            layers.append(block(self.in_planes, planes, stride,
+                                sketch_rate=self.sketch_rate[self.current_conv - self.start_conv]
+                                if self.current_conv >= self.start_conv else 1.0))
+            self.current_conv += 1
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
@@ -100,17 +111,17 @@ class ResNet(nn.Module):
         out = self.fc(out)
         return out
 
-def resnet(cfg, sketch_rate=1, num_classes=1000):
+def resnet(cfg, sketch_rate=None, start_conv=1, num_classes=1000):
     if cfg == 'resnet18':
-        return ResNet(BasicBlock, [2, 2, 2, 2], sketch_rate=sketch_rate, num_classes=num_classes)
+        return ResNet(BasicBlock, [2, 2, 2, 2], sketch_rate=sketch_rate, num_classes=num_classes, start_conv=start_conv)
     elif cfg == 'resnet34':
-        return ResNet(BasicBlock, [3, 4, 6, 3], sketch_rate=sketch_rate, num_classes=num_classes)
+        return ResNet(BasicBlock, [3, 4, 6, 3], sketch_rate=sketch_rate, num_classes=num_classes, start_conv=start_conv)
     elif cfg == 'resnet50':
-        return ResNet(Bottleneck, [3, 4, 6, 3], sketch_rate=sketch_rate, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 4, 6, 3], sketch_rate=sketch_rate, num_classes=num_classes, start_conv=start_conv)
     elif cfg == 'resnet101':
-        return ResNet(Bottleneck, [3, 4, 23, 3], sketch_rate=sketch_rate, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 4, 23, 3], sketch_rate=sketch_rate, num_classes=num_classes, start_conv=start_conv)
     elif cfg == 'resnet152':
-        return ResNet(Bottleneck, [3, 8, 36, 3], sketch_rate=sketch_rate, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 8, 36, 3], sketch_rate=sketch_rate, num_classes=num_classes, start_conv=start_conv)
 
 def ResNet18():
     return ResNet(BasicBlock, [2,2,2,2])

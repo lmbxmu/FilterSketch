@@ -7,7 +7,7 @@ import utils.common as utils
 from data import cifar10, imagenet
 from utils.options import args
 from model.vgg import Layerwise_SketchVGG
-from model.resnet import Layerwise_SketchResNet
+from model.resnet import layerwise_resnet, ResBasicBlock
 
 import os
 import time
@@ -236,6 +236,77 @@ def layerwise_sketch_vgg(orimodel, sketch_model, sketch_layer):
 
     sketch_model.load_state_dict(state_dict)
 
+def layerwise_sketch_resnet(orimodel, sketch_model, sketch_layer):
+
+    oristate_dict = orimodel.state_dict()
+    state_dict = sketch_model.state_dict()
+    sketch_last = False #the last layer sketch whether or not
+    current_layer = 0
+
+    for name, module in orimodel.named_modules():
+
+        if isinstance(module, ResBasicBlock):
+
+            if current_layer == sketch_layer:
+
+                oriweight = state_dict
+
+    for name, module in orimodel.named_modules():
+        if isinstance(module, nn.Conv2d):
+
+            oriweight = module.weight.data
+            bn_index = int(name.split('.')[1]) + 1  # the index of BN in state_dict
+            l = int(oriweight.size(0) * args.sketch_rate)
+
+            if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3):
+
+                if sketch_last: #the current layer need sketch channel
+                    l = int(oriweight.size(1) * args.sketch_rate)
+                    sketch_channel = sketch_matrix(oriweight, l, dim=1,
+                                                  bn_weight=oristate_dict['features.' + str(bn_index) + '.weight'],
+                                                  bn_bias=oristate_dict['features.' + str(bn_index) + '.bias'],
+                                                  sketch_bn=False, weight_norm_method=args.weight_norm_method,
+                                                  filter_norm=args.filter_norm)
+                    state_dict[name + '.weight'] = sketch_channel
+
+                if current_layer == sketch_layer:
+                    sketch_filter = sketch_matrix(oriweight, l, dim=0,
+                                                  bn_weight=oristate_dict['features.' + str(bn_index) + '.weight'],
+                                                  bn_bias=oristate_dict['features.' + str(bn_index) + '.bias'],
+                                                  sketch_bn=False, weight_norm_method=args.weight_norm_method,
+                                                  filter_norm=args.filter_norm)
+                    state_dict[name + '.weight'] = sketch_filter
+                    sketch_last = True
+                else:
+                    if sketch_last:
+                        sketch_last = False
+                    else:
+                        state_dict[name + '.weight'] = oriweight
+
+                    state_dict['features.' + str(bn_index) + '.weight'] = \
+                        oristate_dict['features.' + str(bn_index) + '.weight']
+                    state_dict['features.' + str(bn_index) + '.bias'] = \
+                        oristate_dict['features.' + str(bn_index) + '.bias']
+                    state_dict['features.' + str(bn_index) + '.running_mean'] = \
+                        oristate_dict['features.' + str(bn_index) + '.running_mean']
+                    state_dict['features.' + str(bn_index) + '.running_var'] = \
+                        oristate_dict['features.' + str(bn_index) + '.running_var']
+                    state_dict['features.' + str(bn_index) + '.num_batches_tracked'] = \
+                        oristate_dict['features.' + str(bn_index) + '.num_batches_tracked']
+
+
+            else:
+                state_dict[name + '.weight'] = oriweight
+
+            current_layer += 1
+
+        elif isinstance(module, nn.Linear) and sketch_layer != 12:
+
+            state_dict[name + '.weight'] = module.weight.data
+            state_dict[name + '.bias'] = module.bias.data
+
+    sketch_model.load_state_dict(state_dict)
+
 def main():
 
     start_epoch = 0
@@ -271,7 +342,8 @@ def main():
             sketch_model = Layerwise_SketchVGG(sketch_rate=args.sketch_rate, sketch_layer=sketch_layer).to(device)
             layerwise_sketch_vgg(origin_model, sketch_model, sketch_layer)
         elif args.arch == 'resnet' and args.data_set == 'cifar10':
-            pass
+            sketch_model = layerwise_resnet(args.cfg, sketch_rate=args.sketch_rate, sketch_layer=args.sketch_layer)
+            layerwise_sketch_resnet(origin_model, sketch_model, sketch_layer)
         elif args.arch == 'resnet' and args.data_set == 'imagenet':
             pass
 

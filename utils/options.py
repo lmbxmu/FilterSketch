@@ -110,10 +110,17 @@ parser.add_argument(
 
 ## Sketch
 parser.add_argument(
+    '--start_conv',
+    type=int,
+    default=1,
+    help='The index of Conv to start sketch, index starts from 0. default:1'
+)
+
+parser.add_argument(
     '--sketch_rate',
-    type=float,
-    default=0.5,
-    help='The rate of Sketch. default:0.5'
+    type=str,
+    default=None,
+    help='The rate of each sketch conv. default:None'
 )
 
 parser.add_argument(

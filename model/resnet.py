@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import utils.common as utils
 
 norm_mean, norm_var = 0.0, 1.0
 
@@ -49,16 +50,22 @@ class ResBasicBlock(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_layers, sketch_rate=1.0, num_classes=10):
+    def __init__(self, block, num_layers, sketch_rate=None, start_conv=1, num_classes=10):
         super(ResNet, self).__init__()
         assert (num_layers - 2) % 6 == 0, 'depth should be 6n+2'
         n = (num_layers - 2) // 6
 
-        self.sketch_rate = sketch_rate
+        if sketch_rate is None:
+            self.sketch_rate = [1.0] * num_layers
+        else:
+            self.sketch_rate = sketch_rate
+        self.start_conv =start_conv
+        self.current_conv = 0
         self.inplanes = 16
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
+        self.current_conv += 1
 
         self.layer1 = self._make_layer(block, 16, blocks=n, stride=1)
         self.layer2 = self._make_layer(block, 32, blocks=n, stride=2)
@@ -78,11 +85,18 @@ class ResNet(nn.Module):
 
     def _make_layer(self, block, planes, blocks, stride):
         layers = []
-        layers.append(block(self.inplanes, planes, stride, sketch_rate=self.sketch_rate))
+
+        layers.append(block(self.inplanes, planes, stride,
+                            sketch_rate=self.sketch_rate[self.current_conv - self.start_conv]
+                            if self.current_conv >= self.start_conv else 1.0))
+        self.current_conv += 1
 
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes, sketch_rate=self.sketch_rate))
+            layers.append(block(self.inplanes, planes,
+                                sketch_rate=self.sketch_rate[self.current_conv - self.start_conv]
+                                if self.current_conv >= self.start_conv else 1.0))
+            self.current_conv += 1
 
         return nn.Sequential(*layers)
 
@@ -186,10 +200,18 @@ def layerwise_resnet(cfg, **kwargs):
         return layerwise_resnet110(**kwargs)
 
 def test():
-    model = resnet56(sketch_rate=0.5)
-    y = model(torch.randn(1, 3, 32, 32))
-    print(y.size())
+    #python sketch.py --data_set cifar10 --data_path ../data/cifar10 --arch resnet --cfg resnet56 --sketch_model ./experiment/pretrain/resnet_56.pt --job_dir ./experiment/resnet56/sketch --sketch_rate [0.5]*9+[0.6]*9+[0.8]*9
+
+    sketch_rate = '[0.5]*18+[0.6]*18+[0.8]*18'
+    sketch_rate = utils.get_sketch_rate(sketch_rate)
+    model = resnet110(sketch_rate=sketch_rate, start_conv=1)
     print(model)
+
+
+    # model = resnet56(sketch_rate=0.5)
+    # y = model(torch.randn(1, 3, 32, 32))
+    # print(y.size())
+    # print(model)
     # ckpt = torch.load('../checkpoint/resnet_56.pt', map_location='cpu')
     # state_dict = ckpt['state_dict']
     # model.load_state_dict(state_dict)
