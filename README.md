@@ -41,6 +41,25 @@ python sketch.py
 --filter_norm True
 ```
 
+## Remarks
+
+The number of pruning rates required for different networks is as follows:
+
+|           | CIFAR-10 | ImageNet |
+| :-------: | :------: | :------: |
+|   VGG16   |    12    |    -     |
+| ResNet56  |    27    |    -     |
+| ResNet110 |    54    |    -     |
+| GoogLeNet |    -     |    -     |
+| DenseNet  |    -     |    -     |
+| ResNet18  |    -     |    8     |
+| ResNet34  |    -     |    16    |
+| ResNet50  |    -     |    16    |
+| ResNet101 |    -     |    33    |
+| ResNet152 |    -     |    50    |
+
+
+
 ## Other Arguments
 
 ```shell
@@ -96,3 +115,4 @@ optional arguments:
   --test_only           Test only?
 
 ```
+
