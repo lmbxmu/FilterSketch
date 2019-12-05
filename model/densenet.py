@@ -1,13 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import Parameter
 import math
 import numpy as np
-from torch.autograd import Variable
-from torch.distributions.uniform import Uniform
-from torch.distributions.normal import Normal
-import pdb
 
 norm_mean, norm_var = 0.0, 1.0
 
@@ -150,4 +145,4 @@ def test():
     model.load_state_dict(ckpt['state_dict'])
     print(model)
 
-# test()
+test()

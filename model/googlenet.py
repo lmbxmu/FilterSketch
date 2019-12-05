@@ -2,6 +2,7 @@
 
 import torch
 import torch.nn as nn
+import utils.common as utils
 
 norm_mean, norm_var = 0.0, 1.0
 
@@ -42,7 +43,7 @@ class Inception(nn.Module):
                 nn.BatchNorm2d(int(n3x3red * self.sketch_rate)),
                 nn.ReLU(True),
                 conv3x3_2,
-                nn.BatchNorm2d(int(n3x3red * self.sketch_rate)),
+                nn.BatchNorm2d(n3x3),
                 nn.ReLU(True),
             )
 
@@ -101,7 +102,7 @@ class GoogLeNet(nn.Module):
 
         self.covcfg=cov_cfg
         if sketch_rate is None:
-            self.sketch_rate = [1] * 7
+            self.sketch_rate = [1] * 9
         else:
             self.sketch_rate = sketch_rate
 
@@ -187,12 +188,23 @@ class GoogLeNet(nn.Module):
         return out
 
 
-def googlenet(compress_rate=None):
-    return GoogLeNet(block=Inception, compress_rate=[1] * 34)
+def googlenet(sketch_rate=None):
+    return GoogLeNet(block=Inception, sketch_rate=sketch_rate)
 
 def test():
+    cfg = '[0.5]*6+[0.4]*3'
+    sketch_rate = utils.get_sketch_rate(cfg)
+    model = googlenet(sketch_rate=None)
+    ckpt = torch.load('../checkpoint/googlenet.pt', map_location='cpu')
+    model.load_state_dict(ckpt['state_dict'])
+    # print(model)
 
-    model = googlenet()
-    print(model)
+    # for name, module in model.named_modules():
+    #
+    #     if isinstance(module, torch.nn.Conv2d):
+    #         print(name, module.weight.size())
 
-test()
+    # for k, v in ckpt['state_dict'].items():
+    #     print(k, v.size())
+
+# test()

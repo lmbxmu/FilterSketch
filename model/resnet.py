@@ -202,7 +202,7 @@ def layerwise_resnet(cfg, **kwargs):
 def test():
     #python sketch.py --data_set cifar10 --data_path ../data/cifar10 --arch resnet --cfg resnet56 --sketch_model ./experiment/pretrain/resnet_56.pt --job_dir ./experiment/resnet56/sketch --sketch_rate [0.5]*9+[0.6]*9+[0.8]*9
 
-    sketch_rate = '[0.5]*18+[0.5]*18+[0.5]*18'
+    sketch_rate = '[0.5]*54'
     sketch_rate = utils.get_sketch_rate(sketch_rate)
     model = resnet110(sketch_rate=sketch_rate, start_conv=1)
     print(model)

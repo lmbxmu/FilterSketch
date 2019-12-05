@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from utils.options import args
+from model.googlenet import Inception
 import utils.common as utils
 
 import os
@@ -382,116 +383,98 @@ def load_googlenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
         raise ('Sketch model path should be exist!')
     ckpt = torch.load(args.sketch_model, map_location=device)
-    origin_model = import_module(f'model.{args.arch}').GoogLeNet().to(device)
+    origin_model = import_module(f'model.{args.arch}').googlenet().to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
+    logger.info('==>Before Sketch')
+    test(origin_model, loader.testLoader)
     oristate_dict = origin_model.state_dict()
 
     state_dict = model.state_dict()
+    all_sketch_conv_name = []
+    all_sketch_bn_name = []
 
     for name, module in origin_model.named_modules():
+
         if isinstance(module, Inception):
-            conv_weight = []
-            bn_weight = []
-            bn_bias = []
 
-            cfg = [1, 2, 3, 1]
+            sketch_filter_channel_index = ['.branch5x5.3']  # the index of sketch filter and channel weight
+            sketch_channel_index = ['.branch3x3.3', '.branch5x5.6']  # the index of sketch channel weight
+            sketch_filter_index = ['.branch3x3.0', '.branch5x5.0']  # the index of sketch filter weight
+            sketch_bn_index = ['.branch3x3.1', '.branch5x5.1', '.branch5x5.4'] #the index of sketch bn weight
 
-            sketch_filter_channel_index = [4]  # the index of sketch filter and channel weight
-            sketch_channel_index = [2, 5]  # the index of sketch channel weight
-            sketch_filter_index = [1, 3]  # the index of sketch filter weight
+            for bn_index in sketch_bn_index:
+                all_sketch_bn_name.append(name + bn_index)
 
-            for i in range(4): #each inception has four module
+            for weight_index in sketch_filter_channel_index:
 
-                for j in range(cfg[i]):
+                conv_name = name + weight_index + '.weight'
+                all_sketch_conv_name.append(name + weight_index)
 
-                    conv_index = 3 * j
-                    bn_index = 3 * j + 1
+                oriweight = oristate_dict[conv_name]
+                l = state_dict[conv_name].size(0)
 
-                    if i == 3:
-                        conv_index = 1
-                        bn_index = 2
+                sketch_filter = sketch_matrix(oriweight, l, dim=0,
+                                              bn_weight=None,
+                                              bn_bias=None, sketch_bn=False,
+                                              weight_norm_method=args.weight_norm_method,
+                                              filter_norm=args.filter_norm
+                                              )
+                l = state_dict[conv_name].size(1)
+                sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
+                                               weight_norm_method=args.weight_norm_method,
+                                               filter_norm=args.filter_norm
+                                               )
+                state_dict[conv_name] = sketch_channel
 
-                    conv_weight_name = name + '.b' + str(i+1) + '.' + str(conv_index) + '.weight'
-                    conv_weight.append(conv_weight_name)
+            for weight_index in sketch_channel_index:
 
-                    bn_weight_name = name + '.b' + str(i+1) + '.' + str(bn_index) + '.weight'
-                    bn_weight.append(bn_weight_name)
+                conv_name = name + weight_index + '.weight'
+                all_sketch_conv_name.append(name + weight_index)
+                oriweight = oristate_dict[conv_name]
 
-                    bn_bias_name = name + '.b' + str(i+1) + '.' + str(bn_index) + '.bias'
-                    bn_bias.append(bn_bias_name)
+                l = state_dict[conv_name].size(1)
+                sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
+                                               weight_norm_method=args.weight_norm_method,
+                                               filter_norm=args.filter_norm
+                                               )
+                state_dict[conv_name] = sketch_channel
 
-            for i in range(len(conv_weight)):
-                conv_weight_name = conv_weight[i]
-                oriweight = oristate_dict[conv_weight_name]
+            for weight_index in sketch_filter_index:
 
-                l = int(oriweight.size(0) * args.sketch_rate)
+                conv_name = name + weight_index + '.weight'
+                all_sketch_conv_name.append(name + weight_index)
+                oriweight = oristate_dict[conv_name]
 
-                if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and (i in sketch_filter_channel_index
-                                                                                      or i in sketch_filter_index):
-                    if args.sketch_bn:
-                        bn_weight_name = bn_weight[i]
-                        bn_bias_name = bn_bias[i]
-                        bn_weight = oristate_dict[bn_weight_name]
-                        bn_bias = oristate_dict[bn_bias_name]
-                        sketch_filter, state_dict[bn_weight_name], \
-                            state_dict[bn_bias_name] = sketch_matrix(oriweight, l, dim=0,
-                                                           bn_weight=bn_weight,
-                                                           bn_bias=bn_bias, sketch_bn=True)
-                        if args.weight_norm:
-                            sketch_filter /= torch.sum(sketch_filter)
-                            state_dict[bn_weight_name] /= \
-                                torch.sum(state_dict[bn_weight_name])
-                            state_dict[bn_bias_name] /= \
-                                torch.sum(state_dict[bn_bias_name])
-                    else:
-                        sketch_filter = sketch_matrix(oriweight, l, dim=0,
-                                                           bn_weight=None,
-                                                           bn_bias=None, sketch_bn=False,
-                                                            weight_norm_method=args.weight_norm_method,
-                                                            filter_norm=args.filter_norm
-                                                      )
-                    if i in sketch_filter_index or (i in [0, 1, 3, 6] and name == 'a3'):
-                        state_dict[conv_weight_name] = sketch_filter
-                    else:
-                        l = int(oriweight.size(1) * args.sketch_rate)
-                        sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
-                                                       weight_norm_method=args.weight_norm_method,
-                                                       filter_norm=args.filter_norm
-                                                       )
-                        state_dict[conv_weight_name] = sketch_channel
-                    is_preserve = False
-                else:
-                    if i in sketch_channel_index:
-                        l = int(oriweight.size(1) * args.sketch_rate)
-                        sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
-                                                       weight_norm_method=args.weight_norm_method,
-                                                       filter_norm=args.filter_norm
-                                                       )
-                        state_dict[conv_weight_name] = sketch_channel
-                    else:
-                        state_dict[conv_weight_name] = oriweight
-                        is_preserve = True
+                l = state_dict[conv_name].size(0)
+                sketch_filter = sketch_matrix(oriweight, l, dim=0, bn_weight=None, sketch_bn=False,
+                                               weight_norm_method=args.weight_norm_method,
+                                               filter_norm=args.filter_norm
+                                               )
+                state_dict[conv_name] = sketch_filter
 
     for name, module in model.named_modules(): #Reassign non sketch weights to the new network
-        if isinstance(module, Inception):
-            state_dict[name + '.b1.0.weight'] = oristate_dict[name + '.b1.0.weight']
-            state_dict[name + '.b1.1.weight'] = oristate_dict[name + '.b1.1.weight']
-            state_dict[name + '.b1.1.bias'] = oristate_dict[name + '.b1.1.bias']
 
-            state_dict[name + '.b4.1.weight'] = oristate_dict[name + '.b4.1.weight']
-            state_dict[name + '.b4.2.weight'] = oristate_dict[name + '.b4.2.weight']
-            state_dict[name + '.b4.2.bias'] = oristate_dict[name + '.b4.2.bias']
+        if isinstance(module, nn.Conv2d):
 
-        # elif isinstance(module, nn.Linear):
-        #     state_dict[name + '.weight'] = oristate_dict[name + '.weight']
-        #     state_dict[name + '.bias'] = oristate_dict[name + '.bias']
+            if name not in all_sketch_conv_name:
+                state_dict[name + '.weight'] = oristate_dict[name + '.weight']
+                state_dict[name + '.bias'] = oristate_dict[name + '.bias']
 
-    state_dict['pre_layers.0.weight'] = oristate_dict['pre_layers.0.weight']
-    state_dict['pre_layers.0.bias'] = oristate_dict['pre_layers.0.bias']
-    state_dict['pre_layers.1.weight'] = oristate_dict['pre_layers.1.weight']
-    state_dict['pre_layers.1.bias'] = oristate_dict['pre_layers.1.bias']
+        elif isinstance(module, nn.BatchNorm2d):
+
+            if name not in all_sketch_bn_name:
+                state_dict[name + '.weight'] = oristate_dict[name + '.weight']
+                state_dict[name + '.bias'] = oristate_dict[name + '.bias']
+                state_dict[name + '.running_mean'] = oristate_dict[name + '.running_mean']
+                state_dict[name + '.running_var'] = oristate_dict[name + '.running_var']
+
+        elif isinstance(module, nn.Linear):
+            state_dict[name + '.weight'] = oristate_dict[name + '.weight']
+            state_dict[name + '.bias'] = oristate_dict[name + '.bias']
 
     model.load_state_dict(state_dict)
+    logger.info('==>After Sketch')
+    test(model, loader.testLoader)
 
 def load_densenet_sketch_model(model):
 
@@ -684,7 +667,7 @@ def main():
                         .resnet(args.cfg, sketch_rate=sketch_rate, start_conv=args.start_conv).to(device)
             load_resnet_sketch_model(model)
     elif args.arch == 'googlenet':
-        model = import_module(f'model.{args.arch}').GoogLeNet(sketch_rate).to(device)
+        model = import_module(f'model.{args.arch}').googlenet(sketch_rate).to(device)
         load_googlenet_sketch_model(model)
     elif args.arch == 'densenet':
         model = import_module(f'model.{args.arch}').densenet_cifar(sketch_rate).to(device)
