@@ -35,31 +35,32 @@ python sketch.py
 --lr_decay_step 75 112
 --num_epochs 150 
 --gpus 0
---sketch_rate 0.5 
+--sketch_rate [0.5]*9+[0.6]*9+[0.4]*9
+--start_conv 1
 --weight_norm_method l2 
 --filter_norm True
 ```
 
-## Layer-wise Sketch
+## Remarks
 
-```shell
-python layerwise_sketch.py 
---data_set cifar10 
---data_path ../../data/cifar10 
---sketch_model ./experiment/vgg16/baseline/checkpoint/model_best.pt
---job_dir ./experiment/vgg16/finetune25  
---layerwise_type Sketch
---weight_norm_method l2
---filter_norm True
---gpus 1 
---sketch_rate 0.5 
---lr 0.01
---num_epochs 15 
---lr_decay_step 5 
---train_batch_size 256
-```
+The number of pruning rates required for different networks is as follows:
 
-## Other optional arguments
+|           | CIFAR-10 | ImageNet |
+| :-------: | :------: | :------: |
+|   VGG16   |    12    |    -     |
+| ResNet56  |    27    |    -     |
+| ResNet110 |    54    |    -     |
+| GoogLeNet |    -     |    -     |
+| DenseNet  |    -     |    -     |
+| ResNet18  |    -     |    8     |
+| ResNet34  |    -     |    16    |
+| ResNet50  |    -     |    16    |
+| ResNet101 |    -     |    33    |
+| ResNet152 |    -     |    50    |
+
+
+
+## Other Arguments
 
 ```shell
 optional arguments:
@@ -89,8 +90,11 @@ optional arguments:
                         the iterval of learn rate. default:50, 100
   --weight_decay WEIGHT_DECAY
                         The weight decay of loss. default:5e-4
+  --start_conv START_CONV
+                        The index of Conv to start sketch, index starts from
+                        0. default:1
   --sketch_rate SKETCH_RATE
-                        The rate of Sketch. default:0.5
+                        The rate of each sketch conv. default:None
   --sketch_model SKETCH_MODEL
                         Path to the model wait for sketch. default:None
   --sketch_bn SKETCH_BN
@@ -109,4 +113,6 @@ optional arguments:
                         default:default
                         optional:default,random_pretrain,l1_pretrain
   --test_only           Test only?
+
 ```
+
