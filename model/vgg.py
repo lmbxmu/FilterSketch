@@ -2,7 +2,7 @@ from collections import OrderedDict
 import torch.nn as nn
 import utils.common as utils
 
-cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
+cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512]
 
 class VGG(nn.Module):
     def __init__(self, num_classes=10):
@@ -17,6 +17,7 @@ class VGG(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
+        out = nn.AvgPool2d(2)(out)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
         return out
@@ -50,6 +51,7 @@ class SketchVGG(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
+        out = nn.AvgPool2d(2)(out)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
         return out
@@ -87,6 +89,7 @@ class Layerwise_SketchVGG(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
+        out = nn.AvgPool2d(2)(out)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
         return out
