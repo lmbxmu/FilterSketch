@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from utils.options import args
 from model.googlenet import Inception
-from model.densenet import DenseBasicBlock, Transition
+from model.densenet import DenseBasicBlock
 import utils.common as utils
 
 import os
