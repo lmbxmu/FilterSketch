@@ -69,7 +69,7 @@ The number of pruning rates required for different networks is as follows:
 ## Get FLOPS
 
 ```shell
-python cal_flops_params.py 
+python get_flops.py 
 --data_set cifar10 
 --input_image_size 32 
 --arch resnet 
