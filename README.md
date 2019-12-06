@@ -8,14 +8,11 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 ## CIFAR-10
 
-| [VGG16](https://drive.google.com/open?id=1iqcLZyMTnciVLiKOHNaKbeXixK0KOzuX) | [ResNet56](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) | [ResNet110]() | [DenseNet40]() | [GoogLeNet]() |
+| [VGG16](https://drive.google.com/open?id=1iqcLZyMTnciVLiKOHNaKbeXixK0KOzuX) | [ResNet56](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) | [ResNet110]() |[GoogLeNet]() | [DenseNet40]() | 
 
 ## ImageNet
 
-| [VGG16](https://download.pytorch.org/models/vgg16_bn-6c64b313.pth) | 
 |[ResNet18](https://download.pytorch.org/models/resnet18-5c106cde.pth) | [ResNet34](https://download.pytorch.org/models/resnet34-333f7ec4.pth) | [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) | [ResNet101](https://download.pytorch.org/models/resnet101-5d3b4d8f.pth) | [ResNet152](https://download.pytorch.org/models/resnet152-b121ed2d.pth)|
-|[GoogLeNet](https://download.pytorch.org/models/googlenet-1378be20.pth)|
-|[DenseNet121](https://drive.google.com/open?id=1-ZZu8yGmh518F6621BvHwBZ7NV17wf-9)|[DenseNet161](https://drive.google.com/open?id=1lNWiyyeQKtsldO7iFNmQ11WLNUNH22Jr)|[DenseNet169](https://drive.google.com/open?id=10iScGCR4QY6ZkghATkEaa61-F8buW3fB)|[DenseNet201](https://drive.google.com/open?id=1DZytePACQJyXbgLX_KIUDJRHAerUo4OT)|
 
 # Running Code
 
