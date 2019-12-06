@@ -21,6 +21,14 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 In this code, you can run our models on CIFAR-10 and ImageNet dataset. The code has been tested by Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
 
+You can use the following command to install the thop python package when you need to calculate the flops of the model:
+
+```shell
+pip install thop
+```
+
+
+
 ## Single-shot Sketch
 
 ```shell
@@ -124,4 +132,3 @@ optional arguments:
   --test_only           Test only?
 
 ```
-
