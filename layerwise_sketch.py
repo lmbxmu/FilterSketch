@@ -329,7 +329,7 @@ def main():
         'vgg16': 13 if args.sketch_lastconv else 12,
         'resnet56': 28,
         'resnet110': 55,
-        'resnet18': 5,
+        'resnet18': 9,
         'resnet34': 17,
         'resnet50': 17,
         'resnet101': 34,

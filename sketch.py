@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from utils.options import args
 from model.googlenet import Inception
+from model.densenet import DenseBasicBlock, Transition
 import utils.common as utils
 
 import os
@@ -481,95 +482,34 @@ def load_densenet_sketch_model(model):
     if args.sketch_model is None or not os.path.exists(args.sketch_model):
         raise ('Sketch model path should be exist!')
 
-    cfgs = {
-        'densenet121': [6, 12, 24, 16],
-        'densenet161': [6, 12, 36, 24],
-        'densenet169': [6, 12, 32, 32],
-        'densenet201': [6, 12, 48, 32],
-        'densenet_cifar': [6, 12, 24, 16],
-    }
-    current_cfg = cfgs[args.cfg]
     ckpt = torch.load(args.sketch_model, map_location=device)
-    origin_model = import_module(f'model.{args.arch}').densenet_cifar().to(device)
+    origin_model = import_module(f'model.{args.arch}').densenet_40().to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
+    logger.info('==>Before Sketch')
+    test(origin_model, loader.testLoader)
+
     oristate_dict = origin_model.state_dict()
 
     state_dict = model.state_dict()
 
-    #the first convolution layer sketch filter and the second sketch channel
-    conv_weight = []
-    bn_weight = []
-    bn_bias = []
-    for i in range(4):
+    all_sketch_conv_name = []
+    all_sketch_bn_name = []
 
-        for j in range(current_cfg[i]):
+    for name, module in model.named_modules():
 
-            conv1_weight_name = 'dense%d.%d.conv1.weight' % (i + 1, j)
-            conv2_weight_name = 'dense%d.%d.conv2.weight' % (i + 1, j)
-            conv_weight.append(conv1_weight_name)
-            conv_weight.append(conv2_weight_name)
-
-            bn_weight_name = 'dense%d.%d.bn2.weight' % (i + 1, j)
-            bn_weight.append(bn_weight_name)
-
-            bn_bias_name = 'dense%d.%d.bn2.bias' % (i + 1, j)
-            bn_bias.append(bn_bias_name)
-
-    #     print(k, v.size())
-    # print(conv_weight)
-    # print(bn_weight)
-    # print(bn_bias)
-
-    for i in range(len(conv_weight) // 2):
-        conv_weight_name = conv_weight[2 * i]
-        oriweight = oristate_dict[conv_weight_name]
-
-        l = int(oriweight.size(0) * args.sketch_rate)
-
-        if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3):
-            if args.sketch_bn:
-                bn_weight_name = bn_weight[i]
-                bn_bias_name = bn_bias[i]
-                bn_weight = oristate_dict[bn_weight_name]
-                bn_bias = oristate_dict[bn_bias_name]
-                sketch_filter, state_dict[bn_weight_name], \
-                state_dict[bn_bias_name] = sketch_matrix(oriweight, l, dim=0,
-                                                         bn_weight=bn_weight,
-                                                         bn_bias=bn_bias, sketch_bn=True)
-                if args.weight_norm:
-                    sketch_filter /= torch.sum(sketch_filter)
-                    state_dict[bn_weight_name] /= \
-                        torch.sum(state_dict[bn_weight_name])
-                    state_dict[bn_bias_name] /= \
-                        torch.sum(state_dict[bn_bias_name])
-            else:
-                sketch_filter = sketch_matrix(oriweight, l, dim=0,
-                                              bn_weight=None,
-                                              bn_bias=None, sketch_bn=False,
-                                              weight_norm_method=args.weight_norm_method,
-                                              filter_norm=args.filter_norm
-                                              )
-            state_dict[conv_weight_name] = sketch_filter
-
-            conv_weight_name = conv_weight[2 * i + 1]
-            oriweight = oristate_dict[conv_weight_name]
-            l = int(oriweight.size(1) * args.sketch_rate)
-            sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
-                                           weight_norm_method=args.weight_norm_method,
-                                           filter_norm=args.filter_norm
-                                           )
-            state_dict[conv_weight_name] = sketch_channel
+        if isinstance(module, DenseBasicBlock):
+            pass
 
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
             conv_name = name + '.weight'
-            if conv_name not in conv_weight:
+            if conv_name not in all_sketch_conv_name:
                 state_dict[conv_name] = oristate_dict[conv_name]
 
         elif isinstance(module, nn.BatchNorm2d):
             bn_weight_name = name + '.weight'
             bn_bias_name = name + '.bias'
-            if bn_weight_name not in bn_weight and bn_bias_name not in bn_bias:
+            if bn_weight_name not in all_sketch_bn_name:
                 state_dict[bn_weight_name] = oristate_dict[bn_weight_name]
                 state_dict[bn_bias_name] = oristate_dict[bn_bias_name]
 
@@ -578,6 +518,8 @@ def load_densenet_sketch_model(model):
             state_dict[name + '.bias'] = oristate_dict[name + '.bias']
 
     model.load_state_dict(state_dict)
+    logger.info('==>After Sketch')
+    test(model, loader.testLoader)
 
 # Training
 def train(model, optimizer, trainLoader, args, epoch):

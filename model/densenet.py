@@ -6,18 +6,6 @@ import numpy as np
 
 norm_mean, norm_var = 0.0, 1.0
 
-class ChannelSelection(nn.Module):
-    def __init__(self, indexes):
-        super(ChannelSelection, self).__init__()
-        self.indexes = indexes
-
-    def forward(self, input_tensor):
-        if len(self.indexes) == input_tensor.size()[1]:
-            return input_tensor
-
-        output = input_tensor[:, self.indexes, :, :]
-        return output
-
 class DenseBasicBlock(nn.Module):
     def __init__(self, inplanes, filters, index, expansion=1, growthRate=12, dropRate=0):
         super(DenseBasicBlock, self).__init__()
@@ -58,18 +46,23 @@ class Transition(nn.Module):
 class DenseNet(nn.Module):
 
     def __init__(self, depth=40, block=DenseBasicBlock,
-        dropRate=0, num_classes=10, growthRate=12, compressionRate=2, filters=None, indexes=None):
+        dropRate=0, num_classes=10, growthRate=12, compressionRate=2, filters=None, sketch_rate=None, indexes=None):
         super(DenseNet, self).__init__()
 
         assert (depth - 4) % 3 == 0, 'depth should be 3n+4'
         n = (depth - 4) // 3 if 'DenseBasicBlock' in str(block) else (depth - 4) // 6
 
+        if sketch_rate is None:
+            self.sketch_rate = [1] * 3
+        else:
+            self.sketch_rate = sketch_rate
+
         if filters == None:
             filters = []
             start = growthRate*2
             for i in range(3):
-                filters.append([start + growthRate*i for i in range(n+1)])
-                start = (start + growthRate*n) // compressionRate
+                filters.append([start + int(growthRate * self.sketch_rate[i]) * j for j in range(n+1)])
+                start = (start + int(growthRate * self.sketch_rate[i]) * n) // compressionRate
             filters = [item for sub_list in filters for item in sub_list]
 
             indexes = []
@@ -82,10 +75,13 @@ class DenseNet(nn.Module):
         self.inplanes = growthRate * 2
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, padding=1,
                                bias=False)
+        self.growthRate = int(growthRate * self.sketch_rate[0])
         self.dense1 = self._make_denseblock(block, n, filters[0:n], indexes[0:n])
         self.trans1 = self._make_transition(Transition, compressionRate, filters[n], indexes[n])
+        self.growthRate = int(growthRate * self.sketch_rate[1])
         self.dense2 = self._make_denseblock(block, n, filters[n+1:2*n+1], indexes[n+1:2*n+1])
         self.trans2 = self._make_transition(Transition, compressionRate, filters[2*n+1], indexes[2*n+1])
+        self.growthRate = int(growthRate * self.sketch_rate[2])
         self.dense3 = self._make_denseblock(block, n, filters[2*n+2:3*n+2], indexes[2*n+2:3*n+2])
         self.bn = nn.BatchNorm2d(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
@@ -136,13 +132,22 @@ class DenseNet(nn.Module):
 
         return x
 
-def densenet_40(**kwargs):
-    return DenseNet(depth=40, block=DenseBasicBlock, compressionRate=1, **kwargs)
+def densenet_40(sketch_rate=None, **kwargs):
+    return DenseNet(depth=40, block=DenseBasicBlock, compressionRate=1, sketch_rate=sketch_rate, **kwargs)
 
 def test():
-    model = densenet_40()
-    ckpt = torch.load('../checkpoint/densenet_40.pt', map_location='cpu')
-    model.load_state_dict(ckpt['state_dict'])
+    sketch_rate = [0.5, 0.6, 0.4]
+    model = densenet_40(sketch_rate=sketch_rate)
+    # ckpt = torch.load('../checkpoint/densenet_40.pt', map_location='cpu')
+    # model.load_state_dict(ckpt['state_dict'])
+    # y = model(torch.randn(1, 3, 32, 32))
+    # print(y.size())
     print(model)
+    # for k, v in model.state_dict().items():
+    #     print(k, v.size())
 
-test()
+    # for name, module in model.named_modules():
+    #     if isinstance(module, DenseBasicBlock):
+    #         print(name)
+
+# test()
