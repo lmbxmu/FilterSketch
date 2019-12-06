@@ -58,7 +58,16 @@ The number of pruning rates required for different networks is as follows:
 | ResNet101 |    -     |    33    |
 | ResNet152 |    -     |    50    |
 
+## Get FLOPS
 
+```shell
+python cal_flops_params.py 
+--data_set cifar10 
+--input_image_size 32 
+--arch resnet 
+--cfg resnet56
+--sketch_rate [0.6]*27
+```
 
 ## Other Arguments
 
