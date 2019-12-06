@@ -50,7 +50,7 @@ The number of pruning rates required for different networks is as follows:
 |   VGG16   |    12    |    -     |
 | ResNet56  |    27    |    -     |
 | ResNet110 |    54    |    -     |
-| GoogLeNet |    -     |    -     |
+| GoogLeNet |    9     |    -     |
 | DenseNet  |    -     |    -     |
 | ResNet18  |    -     |    8     |
 | ResNet34  |    -     |    16    |
