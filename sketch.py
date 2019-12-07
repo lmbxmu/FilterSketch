@@ -642,7 +642,7 @@ def main():
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_step, gamma=0.1)
 
     for epoch in range(start_epoch, args.num_epochs):
-        train(model, optimizer, loader.trainLoader, args, epoch)
+        train(model, optimizer, loader.trainLoader, args, epoch, topk=(1, 5) if args.data_set == 'imagenet' else (1, ))
         scheduler.step()
         test_acc = test(model, loader.testLoader, topk=(1, 5) if args.data_set == 'imagenet' else (1, ))
 
