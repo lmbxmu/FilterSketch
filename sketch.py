@@ -522,11 +522,12 @@ def load_densenet_sketch_model(model):
     test(model, loader.testLoader)
 
 # Training
-def train(model, optimizer, trainLoader, args, epoch):
+def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
     losses = utils.AverageMeter()
-    accurary = utils.AverageMeter()
+    accuracy = utils.AverageMeter()
+    top5_accuracy = utils.AverageMeter()
     print_freq = len(trainLoader.dataset) // args.train_batch_size // 10
     start_time = time.time()
     for batch, (inputs, targets) in enumerate(trainLoader):
@@ -539,21 +540,35 @@ def train(model, optimizer, trainLoader, args, epoch):
         losses.update(loss.item(), inputs.size(0))
         optimizer.step()
 
-        prec1 = utils.accuracy(output, targets)
-        accurary.update(prec1[0], inputs.size(0))
+        prec1 = utils.accuracy(output, targets, topk=topk)
+        accuracy.update(prec1[0], inputs.size(0))
+        if len(topk) == 2:
+            top5_accuracy.update(prec1[1], inputs.size(0))
 
         if batch % print_freq == 0 and batch != 0:
             current_time = time.time()
             cost_time = current_time - start_time
-            logger.info(
-                'Epoch[{}] ({}/{}):\t'
-                'Loss {:.4f}\t'
-                'Accuracy {:.2f}%\t\t'
-                'Time {:.2f}s'.format(
-                    epoch, batch * args.train_batch_size, len(trainLoader.dataset),
-                    float(losses.avg), float(accurary.avg), cost_time
+            if len(topk) == 1:
+                logger.info(
+                    'Epoch[{}] ({}/{}):\t'
+                    'Loss {:.4f}\t'
+                    'Accuracy {:.2f}%\t\t'
+                    'Time {:.2f}s'.format(
+                        epoch, batch * args.train_batch_size, len(trainLoader.dataset),
+                        float(losses.avg), float(accuracy.avg), cost_time
+                    )
                 )
-            )
+            else:
+                logger.info(
+                    'Epoch[{}] ({}/{}):\t'
+                    'Loss {:.4f}\t'
+                    'Top1 {:.2f}%\t'
+                    'Top5 {:.2f}%\t'
+                    'Time {:.2f}s'.format(
+                        epoch, batch * args.train_batch_size, len(trainLoader.dataset),
+                        float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), cost_time
+                    )
+                )
             start_time = current_time
 
 def test(model, testLoader, topk=(1,)):
@@ -587,7 +602,10 @@ def test(model, testLoader, topk=(1,)):
                 'Test Loss {:.4f}\tTop1 {:.2f}%\tTop5 {:.2f}%\tTime {:.2f}s\n'
                     .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
             )
-    return accuracy.avg
+    if len(topk) == 1:
+        return accuracy.avg
+    else:
+        return top5_accuracy.avg
 
 def main():
     start_epoch = 0
