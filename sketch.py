@@ -633,7 +633,7 @@ def main():
         model = import_module(f'model.{args.arch}').densenet_cifar(sketch_rate).to(device)
         load_densenet_sketch_model(model)
 
-    print('Sketch Done!')
+    print('==>Sketch Done!')
 
     if len(args.gpus) != 1:
         model = nn.DataParallel(model, device_ids=args.gpus)
