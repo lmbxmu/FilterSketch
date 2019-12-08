@@ -288,7 +288,6 @@ def main():
     load_resnet_imagenet_sketch_model(model)
 
     print('==>Sketch Done!')
-
     if len(args.gpus) != 1:
         model = nn.DataParallel(model, device_ids=args.gpus)
 
