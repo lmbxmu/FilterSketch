@@ -16,10 +16,15 @@ loss_func = nn.CrossEntropyLoss()
 
 # Data
 print('==> Preparing data..')
-trainLoader = imagenet_dali.get_imagenet_iter_dali('train', args.data_path, args.train_batch_size,
+def get_data_set(type='train'):
+    if type == 'train':
+        return imagenet_dali.get_imagenet_iter_dali('train', args.data_path, args.train_batch_size,
                                                    num_threads=4, crop=224, device_id=args.gpus[0], num_gpus=1)
-testLoader = imagenet_dali.get_imagenet_iter_dali('val', args.data_path, args.eval_batch_size,
+    else:
+        return imagenet_dali.get_imagenet_iter_dali('val', args.data_path, args.eval_batch_size,
                                                    num_threads=4, crop=224, device_id=args.gpus[0], num_gpus=1)
+trainLoader = get_data_set('train')
+testLoader = get_data_set('test')
 
 def weight_norm(weight, weight_norm_method=None, filter_norm=False):
 
@@ -218,6 +223,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
     top5_accuracy = utils.AverageMeter()
     print_freq = trainLoader._size // args.train_batch_size // 10
     start_time = time.time()
+    trainLoader = get_data_set('train')
     for batch, batch_data in enumerate(trainLoader):
 
         inputs = batch_data[0]['data'].to(device)
@@ -256,6 +262,7 @@ def test(model, testLoader, topk=(1,)):
     top5_accuracy = utils.AverageMeter()
 
     start_time = time.time()
+    testLoader = get_data_set('test')
     with torch.no_grad():
         for batch_idx, batch_data in enumerate(testLoader):
             inputs = batch_data[0]['data'].to(device)
