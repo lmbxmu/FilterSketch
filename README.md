@@ -24,7 +24,7 @@ You can use the following command to install the thop python package when you ne
 pip install thop
 ```
 
-
+The difference between **sketch.py** and **sketch_ imagenet.py** is that **sketch_imagenet.py** uses **nvidia.dali** package to speed up the image reading speed of the Imagenet dataset, so as to speed up the training speed.
 
 ## Single-shot Sketch
 
