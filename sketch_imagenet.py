@@ -281,11 +281,12 @@ def test(model, testLoader, topk=(1,)):
                 .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
         )
 
-    return top5_accuracy.avg
+    return accuracy.avg, top5_accuracy.avg
 
 def main():
     start_epoch = 0
-    best_acc = 0.0
+    best_top1_acc = 0.0
+    best_top5_acc = 0.0
 
     # Model
     print('==> Building model..')
@@ -304,23 +305,25 @@ def main():
     for epoch in range(start_epoch, args.num_epochs):
         train(model, optimizer, trainLoader, args, epoch, topk=(1, 5))
         scheduler.step()
-        test_acc = test(model, testLoader, topk=(1, 5))
+        test_top1_acc, test_top5_acc = test(model, testLoader, topk=(1, 5))
 
-        is_best = best_acc < test_acc
-        best_acc = max(best_acc, test_acc)
+        is_best = best_top5_acc < test_top5_acc
+        best_top1_acc = max(best_top1_acc, test_top1_acc)
+        best_top5_acc = max(best_top5_acc, test_top5_acc)
 
         model_state_dict = model.module.state_dict() if len(args.gpus) > 1 else model.state_dict()
 
         state = {
             'state_dict': model_state_dict,
-            'best_acc': best_acc,
+            'best_top1_acc': best_top1_acc,
+            'best_top5_acc': best_top5_acc,
             'optimizer': optimizer.state_dict(),
             'scheduler': scheduler.state_dict(),
             'epoch': epoch + 1
         }
         checkpoint.save_model(state, epoch + 1, is_best)
 
-    logger.info('Best accuracy: {:.3f}'.format(float(best_acc)))
+    logger.info('Best Top-1 accuracy: {:.3f} Top-5 accuracy: {:.3f}'.format(float(best_top1_acc), float(best_top5_acc)))
 
 if __name__ == '__main__':
     main()

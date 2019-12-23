@@ -210,12 +210,6 @@ def load_resnet_sketch_model(model):
                             state_dict[bn_bias_name] = sketch_matrix(oriweight, l, dim=0,
                                                            bn_weight=bn_weight,
                                                            bn_bias=bn_bias, sketch_bn=True)
-                        if args.weight_norm:
-                            sketch_filter /= torch.sum(sketch_filter)
-                            state_dict[bn_weight_name] /= \
-                                torch.sum(state_dict[bn_weight_name])
-                            state_dict[bn_bias_name] /= \
-                                torch.sum(state_dict[bn_bias_name])
                     else:
                         sketch_filter = sketch_matrix(oriweight, l, dim=0,
                                                     bn_weight=None,
