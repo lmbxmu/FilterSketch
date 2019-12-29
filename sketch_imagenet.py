@@ -41,7 +41,7 @@ def weight_norm(weight, weight_norm_method=None, filter_norm=False):
     elif weight_norm_method == '2max':
         norm_func = lambda x: (2 * torch.max(torch.abs(x)))
     else:
-        norm_func = lambda x: x
+        norm_func = lambda x: 1.0
 
     if filter_norm:
         for i in range(weight.size(0)):
