@@ -83,7 +83,7 @@ def sketch_matrix(weight, l, dim,
             sigmaSquare = sigma.mul(sigma)
             sigmaSquareDiag = torch.diag(sigmaSquare)
             theta = sigmaSquareDiag[ind]
-            sigmaSquare = sigmaSquare - torch.eye(l) * theta
+            sigmaSquare = sigmaSquareDiag - torch.eye(l) * theta
             sigmaHat = torch.sqrt(torch.where(sigmaSquare > 0,
                                               sigmaSquare, torch.zeros(sigmaSquare.size())))
             B = sigmaHat.mm(u.t())
