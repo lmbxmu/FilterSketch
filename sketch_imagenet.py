@@ -228,6 +228,9 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
         inputs = batch_data[0]['data'].to(device)
         targets = batch_data[0]['label'].squeeze().long().to(device)
+
+        adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.batch_size)
+
         optimizer.zero_grad()
         output = model(inputs)
         loss = loss_func(output, targets)
@@ -283,6 +286,25 @@ def test(model, testLoader, topk=(1,)):
 
     return accuracy.avg, top5_accuracy.avg
 
+def adjust_learning_rate(optimizer, epoch, step, len_epoch):
+    """LR schedule that should yield 76% converged accuracy with batch size 256"""
+    factor = epoch // 30
+
+    if epoch >= 80:
+        factor = factor + 1
+
+    lr = args.lr * (0.1 ** factor)
+
+    """Warmup"""
+    if epoch < 5:
+        lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
+
+    # if(args.local_rank == 0 and step % args.print_freq == 0 and step > 1):
+    #     print("Epoch = {}, step = {}, lr = {}".format(epoch, step, lr))
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
 def main():
     start_epoch = 0
     best_top1_acc = 0.0
@@ -300,11 +322,12 @@ def main():
         model = nn.DataParallel(model, device_ids=args.gpus)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_step, gamma=0.1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_step, gamma=0.1)
 
     for epoch in range(start_epoch, args.num_epochs):
         train(model, optimizer, trainLoader, args, epoch, topk=(1, 5))
-        scheduler.step()
+
+        # scheduler.step()
         test_top1_acc, test_top5_acc = test(model, testLoader, topk=(1, 5))
 
         is_best = best_top5_acc < test_top5_acc
@@ -318,7 +341,7 @@ def main():
             'best_top1_acc': best_top1_acc,
             'best_top5_acc': best_top5_acc,
             'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict(),
+            # 'scheduler': scheduler.state_dict(),
             'epoch': epoch + 1
         }
         checkpoint.save_model(state, epoch + 1, is_best)
