@@ -60,14 +60,14 @@ def get_imagenet_iter_dali(type, image_dir, batch_size, num_threads, device_id, 
                            world_size=1,
                            local_rank=0):
     if type == 'train':
-        pip_train = HybridTrainPipe(batch_size=batch_size, num_threads=num_threads, device_id=local_rank,
+        pip_train = HybridTrainPipe(batch_size=batch_size, num_threads=num_threads, device_id=device_id,
                                     data_dir=image_dir + '/ILSVRC2012_img_train',
                                     crop=crop, world_size=world_size, local_rank=local_rank)
         pip_train.build()
         dali_iter_train = DALIClassificationIterator(pip_train, size=pip_train.epoch_size("Reader") // world_size)
         return dali_iter_train
     elif type == 'val':
-        pip_val = HybridValPipe(batch_size=batch_size, num_threads=num_threads, device_id=local_rank,
+        pip_val = HybridValPipe(batch_size=batch_size, num_threads=num_threads, device_id=device_id,
                                 data_dir=image_dir + '/val',
                                 crop=crop, size=val_size, world_size=world_size, local_rank=local_rank)
         pip_val.build()
