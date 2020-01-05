@@ -229,7 +229,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
         inputs = batch_data[0]['data'].to(device)
         targets = batch_data[0]['label'].squeeze().long().to(device)
 
-        adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.batch_size)
+        adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.train_batch_size)
 
         optimizer.zero_grad()
         output = model(inputs)
