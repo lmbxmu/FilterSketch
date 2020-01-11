@@ -223,7 +223,6 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
     top5_accuracy = utils.AverageMeter()
     print_freq = trainLoader._size // args.train_batch_size // 10
     start_time = time.time()
-    trainLoader = get_data_set('train')
     for batch, batch_data in enumerate(trainLoader):
 
         inputs = batch_data[0]['data'].to(device)
@@ -256,6 +255,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
                 )
             )
             start_time = current_time
+    trainLoader.reset()
 
 def test(model, testLoader, topk=(1,)):
     model.eval()
@@ -265,7 +265,6 @@ def test(model, testLoader, topk=(1,)):
     top5_accuracy = utils.AverageMeter()
 
     start_time = time.time()
-    testLoader = get_data_set('test')
     with torch.no_grad():
         for batch_idx, batch_data in enumerate(testLoader):
             inputs = batch_data[0]['data'].to(device)
@@ -283,7 +282,7 @@ def test(model, testLoader, topk=(1,)):
             'Test Loss {:.4f}\tTop1 {:.2f}%\tTop5 {:.2f}%\tTime {:.2f}s\n'
                 .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
         )
-
+    testLoader.reset()
     return accuracy.avg, top5_accuracy.avg
 
 def adjust_learning_rate(optimizer, epoch, step, len_epoch):
