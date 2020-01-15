@@ -1,6 +1,6 @@
 # Describe
 
-Pruning neural network model via sketch.
+Pruning neural network model via filter sketch.
 
 # Pre-train Models
 
@@ -8,11 +8,25 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 ## CIFAR-10
 
-| [VGG16](https://drive.google.com/open?id=1pz-_0CCdL-1psIQ545uJ3xT6S_AAnqet) | [ResNet56](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) | [ResNet110](https://drive.google.com/open?id=1Uqg8_J-q2hcsmYTAlRtknCSrkXDqYDMD) |[GoogLeNet](https://drive.google.com/open?id=1YNno621EuTQTVY2cElf8YEue9J4W5BEd) | [DenseNet40](https://drive.google.com/open?id=1TV_b98le-R0sDIkhc5pfrO6zn4uggOWl) | 
+| [ResNet56](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) | [ResNet110](https://drive.google.com/open?id=1Uqg8_J-q2hcsmYTAlRtknCSrkXDqYDMD) |[GoogLeNet](https://drive.google.com/open?id=1YNno621EuTQTVY2cElf8YEue9J4W5BEd) | 
 
 ## ImageNet
 
-|[ResNet18](https://download.pytorch.org/models/resnet18-5c106cde.pth) | [ResNet34](https://download.pytorch.org/models/resnet34-333f7ec4.pth) | [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) | [ResNet101](https://download.pytorch.org/models/resnet101-5d3b4d8f.pth) | [ResNet152](https://download.pytorch.org/models/resnet152-b121ed2d.pth)|
+| [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
+
+# Result Models
+
+we provide all models after sketching in our experiments.
+
+|           | DataSet  |              Sketch Rate              | Flops  | Params | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
+| :-------: | :------: | :-----------------------------------: | :----: | :----: | :------------: | :------------: | :----------------------------------------------------------: |
+| ResNet56  | CIFAR-10 |               [0.6]*27                | 73.36M | 0.50M  |     93.19      |       -        | [Link](https://drive.google.com/open?id=1E1I1Cg5Ki6aIzvjKixDSrjuEeV6rnrRF) |
+| ResNet110 | CIFAR-10 | [0.9]\*3+[0.4]\*24+[0.3]\*24+[0.9]\*3 | 92.84M | 0.69M  |     93.44      |       -        | [Link](https://drive.google.com/open?id=1h0vh6pprBXDz8FYQK43gQT6PirmGtkVa) |
+| GoogLeNet | CIFAR-10 |               [0.25]*9                | 0.59B  | 2.61M  |     94.88      |       -        | [Link](https://drive.google.com/open?id=10uS8hDD4n85fiSGUxBtKljcpRPHeHWX0) |
+| ResNet50  | ImageNet |               [0.2]*16                | 0.93B  | 7.18M  |     69.43      |     89.23      | [Link](https://drive.google.com/open?id=1Xo82p37IVKelp4K79tn8TaBdU4bvqhPj) |
+| ResNet50  | ImageNet |               [0.4]*16                | 1.51B  | 10.40M |     73.04      |     91.18      | [Link](https://drive.google.com/open?id=1Q-aUjEUh5Q-3Syc5i1n0ZBq85QDUpUtQ) |
+| ResNet50  | ImageNet |               [0.6]*16                | 2.23B  | 14.53M |     74.68      |     92.17      | [Link](https://drive.google.com/open?id=1Kk2PRsFAsK_uhs8siWnfvURJlz4zc_j2) |
+| ResNet50  | ImageNet |               [0.7]*16                | 2.64B  | 16.95M |     75.22      |     92.50      | [Link](https://drive.google.com/open?id=13Fc-eNP4z3HSQuikcRmHLSvpVJrjXYVu) |
 
 # Running Code
 
@@ -24,44 +38,43 @@ You can use the following command to install the thop python package when you ne
 pip install thop
 ```
 
-The difference between **sketch.py** and **sketch_ imagenet.py** is that **sketch_imagenet.py** uses **nvidia.dali** package to speed up the image reading speed of the Imagenet dataset, so as to speed up the training speed.
+## Filter Sketch
 
-## Single-shot Sketch
+You can run the following code to sketch model in cifar10 dataset:
 
 ```shell
-python sketch.py 
+python sketch_cifar.py 
 --data_set cifar10 
---data_path ../data/cifar10 
+--data_path ../data/cifar10/
 --sketch_model ./experiment/pretrain/resne56.pt 
---job_dir ./experiment/resnet56/sketch
+--job_dir ./experiment/resnet56/sketch/
 --arch resnet 
 --cfg resnet56 
 --lr 0.01
---lr_decay_step 75 112
+--lr_decay_step 50 100
 --num_epochs 150 
 --gpus 0
---sketch_rate [0.5]*9+[0.6]*9+[0.4]*9
---start_conv 1
---weight_norm_method l2 
---filter_norm True
+--sketch_rate [0.6]*27
+--weight_norm_method l2
 ```
 
-## Remarks
+You can run the following code to sketch model in imagenet dataset:
 
-The number of pruning rates required for different networks is as follows:
-
-|           | CIFAR-10 | ImageNet |
-| :-------: | :------: | :------: |
-|   VGG16   |    12    |    -     |
-| ResNet56  |    27    |    -     |
-| ResNet110 |    54    |    -     |
-| GoogLeNet |    9     |    -     |
-| DenseNet  |    -     |    -     |
-| ResNet18  |    -     |    8     |
-| ResNet34  |    -     |    16    |
-| ResNet50  |    -     |    16    |
-| ResNet101 |    -     |    33    |
-| ResNet152 |    -     |    50    |
+```shell
+python sketch_imagenet.py 
+--data_set imagenet 
+--data_path ../data/imagenet/
+--sketch_model ./experiment/pretrain/resne50.pth 
+--job_dir ./experiment/resnet50/sketch/
+--arch resnet 
+--cfg resnet50 
+--lr 0.1
+--lr_decay_step 30 60
+--num_epochs 90 
+--gpus 0
+--sketch_rate [0.6]*16
+--weight_norm_method l2
+```
 
 ## Get FLOPS
 
@@ -73,6 +86,17 @@ python get_flop.py
 --cfg resnet56
 --sketch_rate [0.6]*27
 ```
+
+## Remarks
+
+The number of pruning rates required for different networks is as follows:
+
+|           | CIFAR-10 | ImageNet |
+| :-------: | :------: | :------: |
+| ResNet56  |    27    |    -     |
+| ResNet110 |    54    |    -     |
+| GoogLeNet |    9     |    -     |
+| ResNet50  |    -     |    16    |
 
 ## Other Arguments
 
@@ -87,11 +111,8 @@ optional arguments:
                         default:/home/lishaojie/data/cifar10/
   --job_dir JOB_DIR     The directory where the summaries will be stored.
                         default:./experiments
-  --reset               Reset the directory?
-  --resume RESUME       Load the model from the specified checkpoint.
-  --refine REFINE       Path to the model to be fine tuned.
-  --arch ARCH           Architecture of model. default:vgg
-  --cfg CFG             Detail architecuture of model. default:vgg16
+  --arch ARCH           Architecture of model. default:resnet
+  --cfg CFG             Detail architecuture of model. default:resnet56
   --num_epochs NUM_EPOCHS
                         The num of epochs to train. default:150
   --train_batch_size TRAIN_BATCH_SIZE
@@ -108,24 +129,15 @@ optional arguments:
                         The index of Conv to start sketch, index starts from
                         0. default:1
   --sketch_rate SKETCH_RATE
-                        The rate of each sketch conv. default:None
+                        The proportion of each layer reserved after sketching
+                        convolution layer sketch. default:None
   --sketch_model SKETCH_MODEL
                         Path to the model wait for sketch. default:None
-  --sketch_bn SKETCH_BN
-                        Whether the BN weights are sketched or not?
-                        default:False
   --weight_norm_method WEIGHT_NORM_METHOD
                         Select the weight norm method. default:None
-                        Optional:max,sum,l2,l1,l2_2,2max
-  --filter_norm FILTER_NORM
-                        Filter level normalization or not? default:False
-  --sketch_lastconv SKETCH_LASTCONV
-                        Is the last layer of convolution sketched?
-                        default:True
-  --random_rule RANDOM_RULE
-                        Weight initialization criterion after random clipping.
-                        default:default
-                        optional:default,random_pretrain,l1_pretrain
-  --test_only           Test only?
-
+                        Optional:l2
 ```
+
+## Tips
+
+If you find any problems, please feel free to contact to the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
