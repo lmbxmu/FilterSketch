@@ -32,11 +32,7 @@ we provide all models after sketching in our experiments.
 
 In this code, you can run our models on CIFAR-10 and ImageNet dataset. The code has been tested by Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
 
-You can use the following command to install the thop python package when you need to calculate the flops of the model:
 
-```shell
-pip install thop
-```
 
 ## Filter Sketch
 
@@ -77,6 +73,12 @@ python sketch_imagenet.py
 ```
 
 ## Get FLOPS
+
+You can use the following command to install the thop python package when you need to calculate the flops of the model:
+
+```shell
+pip install thop
+```
 
 ```shell
 python get_flop.py 
