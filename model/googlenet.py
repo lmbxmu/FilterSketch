@@ -1,13 +1,5 @@
-'''GoogLeNet with PyTorch.'''
-
 import torch
 import torch.nn as nn
-import utils.common as utils
-
-norm_mean, norm_var = 0.0, 1.0
-
-cov_cfg=[(22*i+2) for i in range(1+2+5+2)]
-
 
 class Inception(nn.Module):
     def __init__(self, in_planes, n1x1, n3x3red, n3x3, n5x5red, n5x5, pool_planes, sketch_rate, tmp_name):
@@ -100,7 +92,6 @@ class GoogLeNet(nn.Module):
     def __init__(self, block=Inception, filters=None, sketch_rate=None):
         super(GoogLeNet, self).__init__()
 
-        self.covcfg=cov_cfg
         if sketch_rate is None:
             self.sketch_rate = [1] * 9
         else:
@@ -187,24 +178,5 @@ class GoogLeNet(nn.Module):
 
         return out
 
-
 def googlenet(sketch_rate=None):
     return GoogLeNet(block=Inception, sketch_rate=sketch_rate)
-
-def test():
-    cfg = '[0.5]*6+[0.4]*3'
-    sketch_rate = utils.get_sketch_rate(cfg)
-    model = googlenet(sketch_rate=None)
-    ckpt = torch.load('../checkpoint/googlenet.pt', map_location='cpu')
-    model.load_state_dict(ckpt['state_dict'])
-    # print(model)
-
-    # for name, module in model.named_modules():
-    #
-    #     if isinstance(module, torch.nn.Conv2d):
-    #         print(name, module.weight.size())
-
-    # for k, v in ckpt['state_dict'].items():
-    #     print(k, v.size())
-
-# test()

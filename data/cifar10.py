@@ -2,11 +2,8 @@ from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 
-
 class Data:
     def __init__(self, args):
-        # pin_memory = False
-        # if args.gpu is not None:
         pin_memory = True
 
         transform_train = transforms.Compose([

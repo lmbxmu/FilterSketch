@@ -30,7 +30,6 @@ class AverageMeter(object):
 class checkpoint():
     def __init__(self, args):
         now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-        today = datetime.date.today()
 
         self.args = args
         self.job_dir = Path(args.job_dir)
@@ -57,7 +56,6 @@ class checkpoint():
 
     def save_model(self, state, epoch, is_best):
         save_path = f'{self.ckpt_dir}/model_{epoch}.pt'
-        # print('=> Saving model to {}'.format(save_path))
         torch.save(state, save_path)
         if is_best:
             shutil.copyfile(save_path, f'{self.ckpt_dir}/model_best.pt')

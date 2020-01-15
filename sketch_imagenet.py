@@ -26,44 +26,22 @@ def get_data_set(type='train'):
 trainLoader = get_data_set('train')
 testLoader = get_data_set('test')
 
-def weight_norm(weight, weight_norm_method=None, filter_norm=False):
+def weight_norm(weight, weight_norm_method=None):
 
-    if weight_norm_method == 'max':
-        norm_func = lambda x: torch.max(torch.abs(x))
-    elif weight_norm_method == 'sum':
-        norm_func = lambda x: torch.sum(torch.abs(weight))
-    elif weight_norm_method == 'l2':
+    if weight_norm_method == 'l2':
         norm_func = lambda x: torch.sqrt(torch.sum(x.pow(2)))
-    elif weight_norm_method == 'l1':
-        norm_func = lambda x: torch.sqrt(torch.sum(torch.abs(x)))
-    elif weight_norm_method == 'l2_2':
-        norm_func = lambda x: torch.sum(weight.pow(2))
-    elif weight_norm_method == '2max':
-        norm_func = lambda x: (2 * torch.max(torch.abs(x)))
     else:
         norm_func = lambda x: 1.0
 
-    if filter_norm:
-        for i in range(weight.size(0)):
-            weight[i] /= norm_func(weight[i])
-    else:
-        weight /= norm_func(weight)
+    weight /= norm_func(weight)
 
     return weight
 
-def sketch_matrix(weight, l, dim,
-                  bn_weight, bn_bias=None, sketch_bn=False,
-                  weight_norm_method=None, filter_norm=False):
-    # if l % 2 != 0:
-    #     raise ('l should be an even number...')
+def sketch_matrix(weight, l, dim, weight_norm_method=None):
+
     A = weight.clone()
     if weight.dim() == 4:  #Convolution layer
         A = A.view(A.size(dim), -1)
-        if sketch_bn:
-            bn_weight = bn_weight.view(bn_weight.size(0), -1)
-            A = torch.cat((A, bn_weight), 1)
-            bn_bias = bn_bias.view(bn_bias.size(0), -1)
-            A = torch.cat((A, bn_bias), 1)
 
     B = torch.zeros(l, A.size(1))
     ind = int(l / 2)
@@ -74,12 +52,9 @@ def sketch_matrix(weight, l, dim,
         if numNonzeroRows < l:
             B[numNonzeroRows, :] = A[i, :]
         else:
-
             if n - i < l // 2:
                 break
-
             u, sigma, _ = torch.svd(B.t())
-
             sigmaSquare = sigma.mul(sigma)
             sigmaSquareDiag = torch.diag(sigmaSquare)
             theta = sigmaSquareDiag[ind]
@@ -87,23 +62,15 @@ def sketch_matrix(weight, l, dim,
             sigmaHat = torch.sqrt(torch.where(sigmaSquare > 0,
                                               sigmaSquare, torch.zeros(sigmaSquare.size())))
             B = sigmaHat.mm(u.t())
-
             numNonzeroRows = ind
             B[numNonzeroRows, :] = A[i, :]
 
         numNonzeroRows = numNonzeroRows + 1
 
     if dim == 0:
-        if sketch_bn:
-            split_size = weight.size(1) * weight.size(2) * weight.size(3)
-            B, bn_para = torch.split(B, split_size, dim=1)
-            return weight_norm(B.view(l, weight.size(1), weight.size(2), weight.size(3)), weight_norm_method, filter_norm), \
-                   torch.unsqueeze(bn_para[:, 0], 0).view(-1), \
-                   torch.unsqueeze(bn_para[:, 1], 0).view(-1),
-        else:
-            return weight_norm(B.view(l, weight.size(1), weight.size(2), weight.size(3)), weight_norm_method, filter_norm)
+        return weight_norm(B.view(l, weight.size(1), weight.size(2), weight.size(3)), weight_norm_method)
     elif dim == 1:
-        return weight_norm(B.view(weight.size(0), l, weight.size(2), weight.size(3)), weight_norm_method, filter_norm)
+        return weight_norm(B.view(weight.size(0), l, weight.size(2), weight.size(3)), weight_norm_method)
 
 def load_resnet_imagenet_sketch_model(model):
     cfg = {'resnet18': [2, 2, 2, 2],
@@ -148,42 +115,23 @@ def load_resnet_imagenet_sketch_model(model):
 
                 if l < oriweight.size(1) * oriweight.size(2) * oriweight.size(3) and j != iter - 1:
                     bn_weight_name = layer_name + str(i) + '.bn' + str(j + 1) + '.weight'
-                    bn_bias_name = layer_name + str(i) + '.bn' + str(j + 1) + '.bias'
                     all_sketch_bn_weight.append(bn_weight_name)
-                    if args.sketch_bn:
-                        bn_weight = oristate_dict[bn_weight_name]
-                        bn_bias = oristate_dict[bn_bias_name]
-                        sketch_filter, state_dict[bn_weight_name], \
-                        state_dict[bn_bias_name] = sketch_matrix(oriweight, l, dim=0,
-                                                                 bn_weight=bn_weight,
-                                                                 bn_bias=bn_bias, sketch_bn=True,
-                                                                 weight_norm_method = args.weight_norm_method,
-                                                                 filter_norm = args.filter_norm
-                        )
-                    else:
-                        sketch_filter = sketch_matrix(oriweight, l, dim=0,
-                                                      bn_weight=None,
-                                                      bn_bias=None, sketch_bn=False,
-                                                      weight_norm_method=args.weight_norm_method,
-                                                      filter_norm=args.filter_norm
-                                                      )
+
+                    sketch_filter = sketch_matrix(oriweight, l, dim=0,
+                                                  weight_norm_method=args.weight_norm_method)
                     if is_preserve or j == 0:
                         state_dict[conv_weight_name] = sketch_filter
                     else:
                         l = state_dict[conv_weight_name].size(1)
-                        sketch_channel = sketch_matrix(sketch_filter, l, dim=1, bn_weight=None, sketch_bn=False,
-                                                       weight_norm_method=args.weight_norm_method,
-                                                       filter_norm=args.filter_norm
-                                                       )
+                        sketch_channel = sketch_matrix(sketch_filter, l, dim=1,
+                                                       weight_norm_method=args.weight_norm_method)
                         state_dict[conv_weight_name] = sketch_channel
                     is_preserve = False
                 else:
                     if j == iter - 1:  # Block the last volume layer only sketch the channel dimension
                         l = state_dict[conv_weight_name].size(1)
-                        sketch_channel = sketch_matrix(oriweight, l, dim=1, bn_weight=None, sketch_bn=False,
-                                                       weight_norm_method=args.weight_norm_method,
-                                                       filter_norm=args.filter_norm
-                                                       )
+                        sketch_channel = sketch_matrix(oriweight, l, dim=1,
+                                                       weight_norm_method=args.weight_norm_method)
                         state_dict[conv_weight_name] = sketch_channel
                     else:
                         state_dict[conv_weight_name] = oriweight
@@ -214,7 +162,6 @@ def load_resnet_imagenet_sketch_model(model):
     logger.info('==>After Sketch')
     test(model, testLoader, topk=(1, 5))
 
-# Training
 def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
@@ -294,12 +241,9 @@ def adjust_learning_rate(optimizer, epoch, step, len_epoch):
 
     lr = args.lr * (0.1 ** factor)
 
-    """Warmup"""
+    #Warmup
     if epoch < 5:
         lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
-
-    # if(args.local_rank == 0 and step % args.print_freq == 0 and step > 1):
-    #     print("Epoch = {}, step = {}, lr = {}".format(epoch, step, lr))
 
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -309,7 +253,6 @@ def main():
     best_top1_acc = 0.0
     best_top5_acc = 0.0
 
-    # Model
     print('==> Building model..')
     sketch_rate = utils.get_sketch_rate(args.sketch_rate)
     model = import_module(f'model.{args.arch}_imagenet')\
@@ -321,12 +264,10 @@ def main():
         model = nn.DataParallel(model, device_ids=args.gpus)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_step, gamma=0.1)
 
     for epoch in range(start_epoch, args.num_epochs):
         train(model, optimizer, trainLoader, args, epoch, topk=(1, 5))
 
-        # scheduler.step()
         test_top1_acc, test_top5_acc = test(model, testLoader, topk=(1, 5))
 
         is_best = best_top5_acc < test_top5_acc
@@ -340,7 +281,6 @@ def main():
             'best_top1_acc': best_top1_acc,
             'best_top5_acc': best_top5_acc,
             'optimizer': optimizer.state_dict(),
-            # 'scheduler': scheduler.state_dict(),
             'epoch': epoch + 1
         }
         checkpoint.save_model(state, epoch + 1, is_best)

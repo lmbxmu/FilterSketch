@@ -1,8 +1,6 @@
 import argparse
-import ast
-import os
 
-parser = argparse.ArgumentParser(description='Prune via Sketch')
+parser = argparse.ArgumentParser(description='Filter Sketch')
 
 parser.add_argument(
     '--gpus',
@@ -32,35 +30,18 @@ parser.add_argument(
     default='experiments/',
     help='The directory where the summaries will be stored. default:./experiments')
 
-parser.add_argument(
-    '--reset',
-    action='store_true',
-    help='Reset the directory?')
-
-parser.add_argument(
-    '--resume',
-    type=str,
-    default=None,
-    help='Load the model from the specified checkpoint.')
-
-parser.add_argument(
-    '--refine',
-    type=str,
-    default=None,
-    help='Path to the model to be fine tuned.')
-
 ## Training
 parser.add_argument(
     '--arch',
     type=str,
-    default='vgg',
-    help='Architecture of model. default:vgg')
+    default='resnet',
+    help='Architecture of model. default:resnet')
 
 parser.add_argument(
     '--cfg',
     type=str,
-    default='vgg16',
-    help='Detail architecuture of model. default:vgg16'
+    default='resnet56',
+    help='Detail architecuture of model. default:resnet56'
 )
 
 parser.add_argument(
@@ -120,7 +101,7 @@ parser.add_argument(
     '--sketch_rate',
     type=str,
     default=None,
-    help='The rate of each sketch conv. default:None'
+    help='The proportion of each layer reserved after sketching convolution layer sketch. default:None'
 )
 
 parser.add_argument(
@@ -131,49 +112,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--sketch_bn',
-    type=ast.literal_eval,
-    default='False',
-    help='Whether the BN weights are sketched or not? default:False'
-)
-
-parser.add_argument(
     '--weight_norm_method',
     type=str,
     default=None,
     help='Select the weight norm method. default:None Optional:max,sum,l2,l1,l2_2,2max'
 )
 
-parser.add_argument(
-    '--filter_norm',
-    type=ast.literal_eval,
-    default='False',
-    help='Filter level normalization or not? default:False'
-)
-
-parser.add_argument(
-    '--sketch_lastconv',
-    type=ast.literal_eval,
-    default='True',
-    help='Is the last layer of convolution sketched? default:True'
-)
-
-parser.add_argument(
-    '--random_rule',
-    type=str,
-    default='default',
-    help='Weight initialization criterion after random clipping. default:default optional:default,random_pretrain,l1_pretrain'
-)
-
-parser.add_argument(
-    '--test_only',
-    action='store_true',
-    help='Test only?')
-
 args = parser.parse_args()
-
-if args.resume is not None and not os.path.isfile(args.resume):
-    raise ValueError('No checkpoint found at {} to resume'.format(args.resume))
-
-if args.refine is not None and not os.path.isfile(args.refine):
-    raise ValueError('No checkpoint found at {} to refine'.format(args.refine))
