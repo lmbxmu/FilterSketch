@@ -71,8 +71,8 @@ flops, params = profile(model, inputs=(input, ))
 print('Params: %.2f'%(params))
 print('FLOPS: %.2f'%(flops))
 
-print('--------------Compress Rate--------------')
-print('Params Compress Rate: %d/%d (%.2f%%)' % (params, oriparams, 100. * params / oriparams))
-print('FLOPS Compress Rate: %d/%d (%.2f%%)' % (flops, oriflops, 100. * flops / oriflops))
+print('--------------Retention Ratio--------------')
+print('Params Retention Ratio: %d/%d (%.2f%%)' % (params, oriparams, 100. * params / oriparams))
+print('FLOPS Retention Ratio: %d/%d (%.2f%%)' % (flops, oriflops, 100. * flops / oriflops))
 
 
