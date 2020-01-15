@@ -115,7 +115,7 @@ parser.add_argument(
     '--weight_norm_method',
     type=str,
     default=None,
-    help='Select the weight norm method. default:None Optional:max,sum,l2,l1,l2_2,2max'
+    help='Select the weight norm method. default:None Optional:l2'
 )
 
 args = parser.parse_args()
