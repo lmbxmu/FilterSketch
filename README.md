@@ -18,15 +18,15 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 we provide all models after sketching in our experiments.
 
-|           | DataSet  |              Sketch Rate              | Flops(Prune Rete） | Params(Prune Rete） | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
-| :-------: | :------: | :-----------------------------------: | :----------------: | :-----------------: | :------------: | :------------: | :----------------------------------------------------------: |
-| ResNet56  | CIFAR-10 |               [0.6]*27                |   73.36M(41.5%)    |    0.50M(41.2%)     |     93.19%     |       -        | [Link](https://drive.google.com/open?id=1Pm2X2JVI0RkD0ouQBchuaCfj_A7Rd01a) |
-| ResNet110 | CIFAR-10 | [0.9]\*3+[0.4]\*24+[0.3]\*24+[0.9]\*3 |   92.84M(63.3%)    |    0.69M(59.9%)     |     93.44%     |       -        | [Link](https://drive.google.com/open?id=1rQn7ovttYItTBProTTE2gf5QSbhFjQ7-) |
-| GoogLeNet | CIFAR-10 |               [0.25]*9                |    0.59B(61.1%)    |    2.61M(57.6%)     |     94.88%     |       -        | [Link](https://drive.google.com/open?id=1GO576PBF6pVfcUffDHrb9yNusU32tfPF) |
-| ResNet50  | ImageNet |               [0.2]*16                |    0.93B(77.3%)    |    7.18M(71.8%)     |     69.43%     |     89.23%     | [Link](https://drive.google.com/open?id=1aEVd45LodINBPe74haf_-z491f3QPWWt) |
-| ResNet50  | ImageNet |               [0.4]*16                |    1.51B(63.1%)    |    10.40M(59.2%)    |     73.04%     |     91.18%     | [Link](https://drive.google.com/open?id=1itHk-Y7IAd2Ox72pJWxS-Metrchtw2ka) |
-| ResNet50  | ImageNet |               [0.6]*16                |    2.23B(45.5%)    |    14.53M(43.0%)    |     74.68%     |     92.17%     | [Link](https://drive.google.com/open?id=1fbSXsfjxbvh12qed-oseNanG8UvhyJXJ) |
-| ResNet50  | ImageNet |               [0.7]*16                |    2.64B(35.5%)    |    16.95M(33.5%)    |     75.22%     |     92.50%     | [Link](https://drive.google.com/open?id=1uofsFoS9KWw69YjwOdz8BjuKDkFSjTaP) |
+|           | DataSet  |              Sketch Rate              | Flops    (Prune Rate） | Params (Prune Rate） | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
+| :-------: | :------: | :-----------------------------------: | :--------------------: | :------------------: | :------------: | :------------: | :----------------------------------------------------------: |
+| ResNet56  | CIFAR-10 |               [0.6]*27                |     73.36M(41.5%)      |     0.50M(41.2%)     |     93.19%     |       -        | [Link](https://drive.google.com/open?id=1Pm2X2JVI0RkD0ouQBchuaCfj_A7Rd01a) |
+| ResNet110 | CIFAR-10 | [0.9]\*3+[0.4]\*24+[0.3]\*24+[0.9]\*3 |     92.84M(63.3%)      |     0.69M(59.9%)     |     93.44%     |       -        | [Link](https://drive.google.com/open?id=1rQn7ovttYItTBProTTE2gf5QSbhFjQ7-) |
+| GoogLeNet | CIFAR-10 |               [0.25]*9                |      0.59B(61.1%)      |     2.61M(57.6%)     |     94.88%     |       -        | [Link](https://drive.google.com/open?id=1GO576PBF6pVfcUffDHrb9yNusU32tfPF) |
+| ResNet50  | ImageNet |               [0.2]*16                |      0.93B(77.3%)      |     7.18M(71.8%)     |     69.43%     |     89.23%     | [Link](https://drive.google.com/open?id=1aEVd45LodINBPe74haf_-z491f3QPWWt) |
+| ResNet50  | ImageNet |               [0.4]*16                |      1.51B(63.1%)      |    10.40M(59.2%)     |     73.04%     |     91.18%     | [Link](https://drive.google.com/open?id=1itHk-Y7IAd2Ox72pJWxS-Metrchtw2ka) |
+| ResNet50  | ImageNet |               [0.6]*16                |      2.23B(45.5%)      |    14.53M(43.0%)     |     74.68%     |     92.17%     | [Link](https://drive.google.com/open?id=1fbSXsfjxbvh12qed-oseNanG8UvhyJXJ) |
+| ResNet50  | ImageNet |               [0.7]*16                |      2.64B(35.5%)      |    16.95M(33.5%)     |     75.22%     |     92.50%     | [Link](https://drive.google.com/open?id=1uofsFoS9KWw69YjwOdz8BjuKDkFSjTaP) |
 
 # Running Code
 
