@@ -26,7 +26,7 @@ we provide all models after sketching in our experiments.
 | ResNet50  | ImageNet |               [0.2]*16                | 0.93B  | 7.18M  |     69.43      |     89.23      | [Link](https://drive.google.com/open?id=1Xo82p37IVKelp4K79tn8TaBdU4bvqhPj) |
 | ResNet50  | ImageNet |               [0.4]*16                | 1.51B  | 10.40M |     73.04      |     91.18      | [Link](https://drive.google.com/open?id=1Q-aUjEUh5Q-3Syc5i1n0ZBq85QDUpUtQ) |
 | ResNet50  | ImageNet |               [0.6]*16                | 2.23B  | 14.53M |     74.68      |     92.17      | [Link](https://drive.google.com/open?id=1Kk2PRsFAsK_uhs8siWnfvURJlz4zc_j2) |
-| ResNet50  | ImageNet |               [0.7]*16                | 2.64B  | 16.95M |     75.22      |     92.50      | [Link](https://drive.google.com/open?id=13Fc-eNP4z3HSQuikcRmHLSvpVJrjXYVu) |
+| ResNet50  | ImageNet |               [0.7]*16                | 2.64B  | 16.95M |     75.22      |     92.41      | [Link](https://drive.google.com/open?id=13Fc-eNP4z3HSQuikcRmHLSvpVJrjXYVu) |
 
 # Running Code
 
