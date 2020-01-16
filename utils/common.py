@@ -36,9 +36,6 @@ class checkpoint():
         self.ckpt_dir = self.job_dir / 'checkpoint'
         self.run_dir = self.job_dir / 'run'
 
-        if args.reset:
-            os.system('rm -rf ' + args.job_dir)
-
         def _make_dir(path):
             if not os.path.exists(path):
                 os.makedirs(path)
