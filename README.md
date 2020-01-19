@@ -142,4 +142,4 @@ optional arguments:
 
 ## Tips
 
-If you find any problems, please feel free to contact to the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
+Any problem, free to contact ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
