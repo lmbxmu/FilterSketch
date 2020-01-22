@@ -4,7 +4,7 @@ Pruning neural network model via filter sketch.
 
 # Pre-train Models
 
-Additionally, we provide several  pre-trained models used in our experiments.
+Additionally, we provide several  pre-trained models used in our paper.
 
 ## CIFAR-10
 
@@ -14,19 +14,19 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 | [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
 
-# Result Models
+# Experimental Results
 
 we provide all models after sketching in our experiments.
 
-|           | DataSet  |              Sketch Rate              | Flops  | Params | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
-| :-------: | :------: | :-----------------------------------: | :----: | :----: | :------------: | :------------: | :----------------------------------------------------------: |
-| ResNet56  | CIFAR-10 |               [0.6]*27                | 73.36M | 0.50M  |     93.19      |       -        | [Link](https://drive.google.com/open?id=1E1I1Cg5Ki6aIzvjKixDSrjuEeV6rnrRF) |
-| ResNet110 | CIFAR-10 | [0.9]\*3+[0.4]\*24+[0.3]\*24+[0.9]\*3 | 92.84M | 0.69M  |     93.44      |       -        | [Link](https://drive.google.com/open?id=1h0vh6pprBXDz8FYQK43gQT6PirmGtkVa) |
-| GoogLeNet | CIFAR-10 |               [0.25]*9                | 0.59B  | 2.61M  |     94.88      |       -        | [Link](https://drive.google.com/open?id=10uS8hDD4n85fiSGUxBtKljcpRPHeHWX0) |
-| ResNet50  | ImageNet |               [0.2]*16                | 0.93B  | 7.18M  |     69.43      |     89.23      | [Link](https://drive.google.com/open?id=1Xo82p37IVKelp4K79tn8TaBdU4bvqhPj) |
-| ResNet50  | ImageNet |               [0.4]*16                | 1.51B  | 10.40M |     73.04      |     91.18      | [Link](https://drive.google.com/open?id=1Q-aUjEUh5Q-3Syc5i1n0ZBq85QDUpUtQ) |
-| ResNet50  | ImageNet |               [0.6]*16                | 2.23B  | 14.53M |     74.68      |     92.17      | [Link](https://drive.google.com/open?id=1Kk2PRsFAsK_uhs8siWnfvURJlz4zc_j2) |
-| ResNet50  | ImageNet |               [0.7]*16                | 2.64B  | 16.95M |     75.22      |     92.50      | [Link](https://drive.google.com/open?id=13Fc-eNP4z3HSQuikcRmHLSvpVJrjXYVu) |
+|           | DataSet  |              Sketch Rate              | Flops<br>(Prune Rate） | Params<br>(Prune Rate） | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
+| :-------: | :------: | :-----------------------------------: | :--------------------: | :---------------------: | :------------: | :------------: | :----------------------------------------------------------: |
+| ResNet56  | CIFAR-10 |               [0.6]*27                |     73.36M(41.5%)      |      0.50M(41.2%)       |     93.19%     |       -        | [Link](https://drive.google.com/open?id=1rp6MwwCzfnIcCUqqKCBKGCkfLMFxxKo2) |
+| ResNet110 | CIFAR-10 | [0.9]\*3+[0.4]\*24+[0.3]\*24+[0.9]\*3 |     92.84M(63.3%)      |      0.69M(59.9%)       |     93.44%     |       -        | [Link](https://drive.google.com/open?id=1CrQ4P_5C__AAyAvXEllzMdxu9nE5rETO) |
+| GoogLeNet | CIFAR-10 |               [0.25]*9                |      0.59B(61.1%)      |      2.61M(57.6%)       |     94.88%     |       -        | [Link](https://drive.google.com/open?id=1GwTuBqmMQr_5NYI0aF11JH57G4djTBB6) |
+| ResNet50  | ImageNet |               [0.2]*16                |      0.93B(77.3%)      |      7.18M(71.8%)       |     69.43%     |     89.23%     | [Link](https://drive.google.com/open?id=148ul5qGuAi3hZWFdengVgik-7f_kb5hC) |
+| ResNet50  | ImageNet |               [0.4]*16                |      1.51B(63.1%)      |      10.40M(59.2%)      |     73.04%     |     91.18%     | [Link](https://drive.google.com/open?id=1Hu8b7qxdTi_sY5RacudJQLkv2amQKbP9) |
+| ResNet50  | ImageNet |               [0.6]*16                |      2.23B(45.5%)      |      14.53M(43.0%)      |     74.68%     |     92.17%     | [Link](https://drive.google.com/open?id=1UJWZlS49-aNfWOBaE6yD2SnXAnldSrew) |
+| ResNet50  | ImageNet |               [0.7]*16                |      2.64B(35.5%)      |      16.95M(33.5%)      |     75.22%     |     92.50%     | [Link](https://drive.google.com/open?id=10PUjcbPwMkeJX2OTJSbwtxkWF5jLvKK1) |
 
 # Running Code
 
@@ -72,7 +72,13 @@ python sketch_imagenet.py
 --weight_norm_method l2
 ```
 
-## Get FLOPS
+## Run Our Pruned Models
+You can run the following command to check our pruned models.
+```shell
+
+```
+
+## Get FLOPS and Parameters
 
 You can use the following command to install the thop python package when you need to calculate the flops of the model:
 
@@ -88,6 +94,9 @@ python get_flop.py
 --cfg resnet56
 --sketch_rate [0.6]*27
 ```
+
+
+
 
 ## Remarks
 
@@ -142,4 +151,4 @@ optional arguments:
 
 ## Tips
 
-Any problem, free to contact lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn.
+Any problems, free to contact the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
