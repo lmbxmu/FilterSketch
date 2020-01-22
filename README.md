@@ -78,7 +78,7 @@ python sketch_imagenet.py
 
 
 
-## Test
+## Test Model's Performance
 
 You can also run the following code to test our models after sketching in experiments:
 
@@ -95,7 +95,7 @@ python test.py
 
 
 
-## Get FLOPS
+## Get FLOPS and Params
 
 You can use the following command to install the thop python package when you need to calculate the flops of the model:
 
