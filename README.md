@@ -4,7 +4,7 @@ Pruning neural network model via filter sketch.
 
 # Pre-train Models
 
-Additionally, we provide several  pre-trained models used in our experiments.
+Additionally, we provide several  pre-trained models used in our paper.
 
 ## CIFAR-10
 
@@ -14,7 +14,7 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 | [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
 
-# Result Models
+# Experimental Results
 
 we provide all models after sketching in our experiments.
 
@@ -72,7 +72,13 @@ python sketch_imagenet.py
 --weight_norm_method l2
 ```
 
-## Get FLOPS
+## Run Our Pruned Models
+You can run the following command to check our pruned models.
+```shell
+
+```
+
+## Get FLOPS and Parameters
 
 You can use the following command to install the thop python package when you need to calculate the flops of the model:
 
@@ -88,6 +94,9 @@ python get_flop.py
 --cfg resnet56
 --sketch_rate [0.6]*27
 ```
+
+
+
 
 ## Remarks
 
@@ -142,4 +151,4 @@ optional arguments:
 
 ## Tips
 
-If you find any problems, please feel free to contact to the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
+Any problems, free to contact the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
