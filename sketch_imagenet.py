@@ -233,7 +233,7 @@ def test(model, testLoader, topk=(1,)):
     return accuracy.avg, top5_accuracy.avg
 
 def adjust_learning_rate(optimizer, epoch, step, len_epoch):
-    """LR schedule that should yield 76% converged accuracy with batch size 256"""
+
     factor = epoch // 30
 
     if epoch >= 80:
