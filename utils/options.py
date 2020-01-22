@@ -108,7 +108,7 @@ parser.add_argument(
     '--sketch_model',
     type=str,
     default=None,
-    help='Path to the model wait for sketch. default:None'
+    help='Path to the model wait for sketch/test. default:None'
 )
 
 parser.add_argument(
