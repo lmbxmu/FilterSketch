@@ -1,10 +1,14 @@
-# Describe
+# Filter Sketch for Network Pruning
 
 Pruning neural network model via filter sketch.
 
-# Pre-train Models
+![FilterSketch-framework](img/framework.png?raw=true)
 
-Additionally, we provide several  pre-trained models used in our paper.
+Framework of FilterSketch. The top displays the second-order covariance of the pre-trained CNN. The bottom shows the estimation of the second-order covariance for the pruned CNN. Our work preserves the covariance information in the pruned model, which is then effectively and efﬁciently solved by matrix sketch. 
+
+# Pre-trained Models
+
+Additionally, we provide several  pre-trained models used in our experiments.
 
 ## CIFAR-10
 
@@ -14,7 +18,7 @@ Additionally, we provide several  pre-trained models used in our paper.
 
 | [ResNet50](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
 
-# Experimental Results
+# Result Models
 
 we provide all models after sketching in our experiments.
 
@@ -72,13 +76,26 @@ python sketch_imagenet.py
 --weight_norm_method l2
 ```
 
-## Run Our Pruned Models
-You can run the following command to check our pruned models.
-```shell
 
+
+## Test
+
+You can also run the following code to test our models after sketching in experiments:
+
+```shell
+python test.py 
+--data_set cifar10 
+--data_path ../data/cifar10 
+--arch resnet 
+--cfg resnet56 
+--sketch_model ./experiment/result/sketch_resnet56.pt 
+--sketch_rate [0.6]*27 
+--gpus 0
 ```
 
-## Get FLOPS and Parameters
+
+
+## Get FLOPS
 
 You can use the following command to install the thop python package when you need to calculate the flops of the model:
 
@@ -87,16 +104,13 @@ pip install thop
 ```
 
 ```shell
-python get_flop.py 
+python get_flops_params.py 
 --data_set cifar10 
 --input_image_size 32 
 --arch resnet 
 --cfg resnet56
 --sketch_rate [0.6]*27
 ```
-
-
-
 
 ## Remarks
 
@@ -151,4 +165,4 @@ optional arguments:
 
 ## Tips
 
-Any problems, free to contact the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
+If you find any problems, please feel free to contact to the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
