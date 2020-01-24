@@ -25,7 +25,7 @@ If you find ABCPruner useful in your research, please consider citing:
 
 # Pre-trained Models
 
-Additionally, we provide several  pre-trained models used in our experiments.
+We provide the pre-trained models used in our paper.
 
 ## CIFAR-10
 
@@ -37,7 +37,7 @@ Additionally, we provide several  pre-trained models used in our experiments.
 
 # Result Models
 
-we provide all models after sketching in our experiments.
+We provide our pruned models in the experiments, along with their training loggers and configurations.
 
 |           | DataSet  |              Sketch Rate              | Flops<br>(Prune Rate） | Params<br>(Prune Rate） | Top-1 Accuracy | Top-5 Accuracy |                           Download                           |
 | :-------: | :------: | :-----------------------------------: | :--------------------: | :---------------------: | :------------: | :------------: | :----------------------------------------------------------: |
@@ -51,13 +51,12 @@ we provide all models after sketching in our experiments.
 
 # Running Code
 
-In this code, you can run our models on CIFAR-10 and ImageNet dataset. The code has been tested by Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
-
+The code has been tested using Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
 
 
 ## Filter Sketch
 
-You can run the following code to sketch model in cifar10 dataset:
+You can run the following code to sketch model on Cifar-10:
 
 ```shell
 python sketch_cifar.py 
@@ -75,7 +74,7 @@ python sketch_cifar.py
 --weight_norm_method l2
 ```
 
-You can run the following code to sketch model in imagenet dataset:
+You can run the following code to sketch model on Imagenet:
 
 ```shell
 python sketch_imagenet.py 
@@ -95,9 +94,9 @@ python sketch_imagenet.py
 
 
 
-## Test Model's Performance
+## Test Our Performance
 
-You can also run the following code to test our models after sketching in experiments:
+Follow the command below to verify our pruned models:
 
 ```shell
 python test.py 
@@ -182,4 +181,4 @@ optional arguments:
 
 ## Tips
 
-If you find any problems, please feel free to contact to the authors ([lmbxmu@stu.xmu.edu.cn](mailto:lmbxmu@stu.xmu.edu.cn) or [shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
+Any problems, free to contact lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn.
