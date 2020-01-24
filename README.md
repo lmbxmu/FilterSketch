@@ -6,6 +6,23 @@ Pruning neural network model via filter sketch.
 
 Framework of FilterSketch. The top displays the second-order covariance of the pre-trained CNN. The bottom shows the estimation of the second-order covariance for the pruned CNN. Our work preserves the covariance information in the pruned model, which is then effectively and efﬁciently solved by matrix sketch. 
 
+
+
+## Citation
+
+If you find ABCPruner useful in your research, please consider citing:
+
+```
+@inproceedings{lin2020Afilter,   
+  title     = {Filter Sketch for Network Pruning},
+  author    = {Mingbao Lin, Rongrong Ji, Shaojie Li, Qixiang Ye, Yonghong Tian, Jianzhuang Liu, and Qi Tian},
+  booktitle = { },
+  year      = {2020}
+}
+```
+
+
+
 # Pre-trained Models
 
 Additionally, we provide several  pre-trained models used in our experiments.
