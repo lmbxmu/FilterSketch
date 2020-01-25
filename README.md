@@ -10,7 +10,7 @@ Framework of FilterSketch. The top displays the second-order covariance of the p
 
 ## Citation
 
-If you find ABCPruner useful in your research, please consider citing:
+If you find FilterSketch useful in your research, please consider citing:
 
 ```
 @inproceedings{lin2020Afilter,   
