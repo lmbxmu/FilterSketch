@@ -13,10 +13,10 @@ Framework of FilterSketch. The top displays the second-order covariance of the p
 If you find FilterSketch useful in your research, please consider citing:
 
 ```
-@inproceedings{lin2020Afilter,   
+@article{lin2020Afilter,   
   title     = {Filter Sketch for Network Pruning},
   author    = {Mingbao Lin, Rongrong Ji, Shaojie Li, Qixiang Ye, Yonghong Tian, Jianzhuang Liu, and Qi Tian},
-  booktitle = { },
+  journal   = { },
   year      = {2020}
 }
 ```
