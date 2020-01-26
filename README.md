@@ -16,7 +16,7 @@ If you find FilterSketch useful in your research, please consider citing:
 @article{lin2020Afilter,   
   title     = {Filter Sketch for Network Pruning},
   author    = {Mingbao Lin, Rongrong Ji, Shaojie Li, Qixiang Ye, Yonghong Tian, Jianzhuang Liu, and Qi Tian},
-  journal   = { },
+  journal   = {arXiv preprint arXiv:2001.08514},
   year      = {2020}
 }
 ```
