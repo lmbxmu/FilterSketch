@@ -1,4 +1,4 @@
-# [Filter Sketch for Network Pruning](https://arxiv.org/abs/2001.08514)
+# Filter Sketch for Network Pruning ([Link](https://arxiv.org/abs/2001.08514))
 
 Pruning neural network model via filter sketch.
 
