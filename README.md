@@ -181,4 +181,5 @@ optional arguments:
 
 ## Tips
 
-Any problem, free to contact the authors (lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn).
+Any problem, free to contact the authors via emails: lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn, or adding the first author's wechat as friends (id: lmbcxy) for convenient communications.
+
