@@ -30,8 +30,14 @@ def test(model, topk=(1,)):
 
     start_time = time.time()
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testLoader):
-            inputs, targets = inputs.to(device), targets.to(device)
+        for batch_idx, batch_data in enumerate(testLoader):
+            if len(topk) == 2:
+                inputs = batch_data[0]['data'].to(device)
+                targets = batch_data[0]['label'].squeeze().long().to(device)
+            else:
+                inputs = batch_data[0]
+                targets = batch_data[1]
+                inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = loss_func(outputs, targets)
 
