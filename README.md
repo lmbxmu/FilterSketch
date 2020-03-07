@@ -47,7 +47,7 @@ We provide our pruned models in the experiments, along with their training logge
 | ResNet50  | ImageNet |               [0.2]*16                |      0.93B(77.3%)      |      7.18M(71.8%)       |     69.43%     |     89.23%     | [Link](https://drive.google.com/open?id=148ul5qGuAi3hZWFdengVgik-7f_kb5hC) |
 | ResNet50  | ImageNet |               [0.4]*16                |      1.51B(63.1%)      |      10.40M(59.2%)      |     73.04%     |     91.18%     | [Link](https://drive.google.com/open?id=1Hu8b7qxdTi_sY5RacudJQLkv2amQKbP9) |
 | ResNet50  | ImageNet |               [0.6]*16                |      2.23B(45.5%)      |      14.53M(43.0%)      |     74.68%     |     92.17%     | [Link](https://drive.google.com/open?id=1UJWZlS49-aNfWOBaE6yD2SnXAnldSrew) |
-| ResNet50  | ImageNet |               [0.7]*16                |      2.64B(35.5%)      |      16.95M(33.5%)      |     75.22%     |     92.50%     | [Link](https://drive.google.com/open?id=10PUjcbPwMkeJX2OTJSbwtxkWF5jLvKK1) |
+| ResNet50  | ImageNet |               [0.7]*16                |      2.64B(35.5%)      |      16.95M(33.5%)      |     75.22%     |     92.41%     | [Link](https://drive.google.com/open?id=10PUjcbPwMkeJX2OTJSbwtxkWF5jLvKK1) |
 
 # Running Code
 
