@@ -8,6 +8,12 @@ Framework of FilterSketch. The top displays the second-order covariance of the p
 
 
 
+## Tips
+
+Any problem, free to contact the authors via emails: lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn, or adding the first author's wechat as friends (id: lmbcxy if you are using wechat) for convenient communications.
+
+
+
 ## Citation
 
 If you find FilterSketch useful in your research, please consider citing:
@@ -178,8 +184,3 @@ optional arguments:
                         Select the weight norm method. default:None
                         Optional:l2
 ```
-
-## Tips
-
-Any problem, free to contact the authors via emails: lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn, or adding the first author's wechat as friends (id: lmbcxy) for convenient communications.
-
