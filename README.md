@@ -68,7 +68,7 @@ You can run the following code to sketch model on Cifar-10:
 python sketch_cifar.py 
 --data_set cifar10 
 --data_path ../data/cifar10/
---sketch_model ./experiment/pretrain/resne56.pt 
+--sketch_model ./experiment/pretrain/resnet56.pt 
 --job_dir ./experiment/resnet56/sketch/
 --arch resnet 
 --cfg resnet56 
@@ -86,7 +86,7 @@ You can run the following code to sketch model on Imagenet:
 python sketch_imagenet.py 
 --data_set imagenet 
 --data_path ../data/imagenet/
---sketch_model ./experiment/pretrain/resne50.pth 
+--sketch_model ./experiment/pretrain/resnet50.pth 
 --job_dir ./experiment/resnet50/sketch/
 --arch resnet 
 --cfg resnet50 
