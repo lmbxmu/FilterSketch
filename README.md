@@ -55,6 +55,20 @@ We provide our pruned models in the experiments, along with their training logge
 | ResNet50  | ImageNet |               [0.6]*16                |      2.23B(45.5%)      |      14.53M(43.0%)      |     74.68%     |     92.17%     | [Link](https://drive.google.com/open?id=1UJWZlS49-aNfWOBaE6yD2SnXAnldSrew) |
 | ResNet50  | ImageNet |               [0.7]*16                |      2.64B(35.5%)      |      16.95M(33.5%)      |     75.22%     |     92.41%     | [Link](https://drive.google.com/open?id=10PUjcbPwMkeJX2OTJSbwtxkWF5jLvKK1) |
 
+Performance of FilterSketch using ResNet-56 under different compression rates.
+
+| DataSet  | Sketch Rate | Flops<br>(Prune Rate） | Params<br>(Prune Rate） | Top-1 Accuracy |                           Download                           |
+| :------: | :---------: | :--------------------: | :---------------------: | :------------: | :----------------------------------------------------------: |
+| CIFAR-10 |  [0.1]*27   |     11.43M(91.0%)      |      0.08M(90.45%)      |     87.38%     | [Link](https://drive.google.com/drive/folders/1Mi4hz1-m8tkTGnrvfTGSXi-H64Zm5GQT?usp=sharing) |
+| CIFAR-10 |  [0.2]*27   |     24.54M(80.6%)      |      0.16M(81.0%)       |     90.19%     | [Link](https://drive.google.com/drive/folders/1feToLzHwvie7GQp3kDu7bJNxOj2Vjx-n?usp=sharing) |
+| CIFAR-10 |  [0.3]*27   |     35.61M(71.9%)      |      0.25M(70.6%)       |     91.65%     | [Link](https://drive.google.com/drive/folders/1m9gyrY2qaSYyK4r2xLD8Wsepy-Gd9u23?usp=sharing) |
+| CIFAR-10 |  [0.4]*27   |     48.72M(61.5%)      |      0.33M(61.1%)       |     92.00%     | [Link](https://drive.google.com/drive/folders/15-MKKShc4Qht9yZXdL4iyFhRRo3dLdZ1?usp=sharing) |
+| CIFAR-10 |  [0.5]*27   |     63.78M(49.6%)      |      0.43M(49.8%)       |     92.29%     | [Link](https://drive.google.com/drive/folders/14H8nbS21KLPL5LEfrz5riDl5l3PTjGrC?usp=sharing) |
+| CIFAR-10 |  [0.6]*27   |     73.36M(41.5%)      |      0.50M(41.2%)       |     93.19%     | [Link](https://drive.google.com/drive/folders/1GqcZhWnkUst6PTkbxlNsw4lUdkF1XB_V?usp=sharing) |
+| CIFAR-10 |  [0.7]*27   |     87.31M(31.0%)      |      0.59M(31.1%)       |     93.36%     | [Link](https://drive.google.com/drive/folders/1fKtESZG0pmXSowuo9_U1bnhslYARHSAu?usp=sharing) |
+| CIFAR-10 |  [0.8]*27   |     98.40M(22.3%)      |      0.68M(20.8%)       |     93.40%     | [Link](https://drive.google.com/drive/folders/1ecJJvioCJNm-UPV9VNLlRTm0t-p_IOtM?usp=sharing) |
+| CIFAR-10 |  [0.9]*27   |     111.5M(11.9%)      |      0.75M(11.3%)       |     93.44%     | [Link](https://drive.google.com/drive/folders/1rsLY1l6_S8Gd4vFYt8NorhTslzIVB8ok?usp=sharing) |
+
 # Running Code
 
 The code has been tested using Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
