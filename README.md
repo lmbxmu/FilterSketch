@@ -2,9 +2,8 @@
 
 Pruning neural network model via filter sketch.
 
-<div align=center><img src="img/framework.png" height = "50%" width = "60%"/></div>
+<div align=center><img src="img/framework.jpeg" height = "50%" width = "60%"/></div>
 
-Framework of FilterSketch. The top displays the second-order covariance of the pre-trained CNN. The bottom shows the estimation of the second-order covariance for the pruned CNN. Our work preserves the covariance information in the pruned model, which is then effectively and efﬁciently solved by matrix sketch. 
 
 
 
