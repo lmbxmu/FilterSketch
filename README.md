@@ -1,4 +1,4 @@
-# Filter Sketch for Network Pruning ([Link](https://arxiv.org/abs/2001.08514))
+# Filter Sketch for Network Pruning ([Link](https://arxiv.org/abs/2001.08514))![]( https://visitor-badge.glitch.me/badge?page_id=lmbxmu.filtersketch).
 
 Pruning neural network model via filter sketch.
 
