@@ -67,7 +67,9 @@ Performance of FilterSketch using ResNet-56 under different compression rates.
 | CIFAR-10 |  [0.7]*27   |     87.31M(31.0%)      |      0.59M(31.1%)       |     93.36%     | [Link](https://drive.google.com/drive/folders/1fKtESZG0pmXSowuo9_U1bnhslYARHSAu?usp=sharing) |
 | CIFAR-10 |  [0.8]*27   |     98.40M(22.3%)      |      0.68M(20.8%)       |     93.40%     | [Link](https://drive.google.com/drive/folders/1ecJJvioCJNm-UPV9VNLlRTm0t-p_IOtM?usp=sharing) |
 | CIFAR-10 |  [0.9]*27   |     111.5M(11.9%)      |      0.75M(11.3%)       |     93.44%     | [Link](https://drive.google.com/drive/folders/1rsLY1l6_S8Gd4vFYt8NorhTslzIVB8ok?usp=sharing) |
-
+| CIFAR-10 |  [0.9]*3+[0.1]*10+[0.1]*10+[0.6]*4   |     32.47M(74.4%)      |      0.24M(71.8%)       |     91.20%     | [Link](https://drive.google.com/drive/folders/1wJzZeYm6yod-L6MshiW49ttSpwRiT5SG?usp=sharing) |
+| CIFAR-10 |  [0.7]*3+[0.4]*10+[0.4]*10+[0.9]*4   |     62.63M(50.5%)      |      0.48M(43.3%)       |     92.94%     | [Link](https://drive.google.com/drive/folders/1gCyXyplkndn49nkyHIm7QDzaD8uqdlQp?usp=sharing) |
+| CIFAR-10 |  [0.8]*3+[0.5]*10+[0.8]*10+[0.9]*4   |     88.05M(30.4%)      |      0.68M(20.6%)       |     93.65%     | [Link](https://drive.google.com/drive/folders/11jGn1HhUxsNVNDJtlBUvzhNeB7e2Vg8X?usp=sharing) |
 # Running Code
 
 The code has been tested using Pytorch1.3 and CUDA10.0 on Ubuntu16.04.
