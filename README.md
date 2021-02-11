@@ -9,7 +9,7 @@ Pruning neural network model via filter sketch.
 
 ## Tips
 
-Any problem, free to contact the authors via emails: lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn, or adding the first author's wechat as friends (id: linmb007 if you are using wechat) for convenient communications. Do not post issues with github as much as possible, just in case that I could not receive the emails from github thus ignore the posted issues.
+Any problem, free to contact the authors via emails: lmbxmu@stu.xmu.edu.cn or shaojieli@stu.xmu.edu.cn. Do not post issues with github as much as possible, just in case that I could not receive the emails from github thus ignore the posted issues.
 
 
 
